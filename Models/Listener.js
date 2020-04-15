@@ -17,24 +17,32 @@ const ListenrSchema = new Schema({
     type: String,
     unique: true,
   },
+  cell: {
+    number: String,
+    activated: {
+      type: Boolean,
+      default: true,
+    },
+  },
   password: {
     type: String,
     required: true,
+  },
+  activationStatus: {
+    activated: {
+      type: Boolean,
+      default: false,
+    },
+    activationDate: Date,
+    activationCode: Number,
   },
   approvalStatus: {
     approved: {
       type: Boolean,
       default: false,
     },
+    disApprovalDate: Date,
     approvalDate: Date,
-    approvalCode: Number,
-  },
-  activationStatus: {
-    active: {
-      type: Boolean,
-      default: true,
-    },
-    deactivationDate: Date,
   },
   avatar: {
     src: String,
@@ -79,7 +87,7 @@ const ListenrSchema = new Schema({
 });
 
 ListenrSchema.plugin(mongooseFieldEncryption, {
-  fields: ["email"],
+  fields: ["email", "number"],
   secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });
 

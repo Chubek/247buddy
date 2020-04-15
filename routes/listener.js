@@ -40,6 +40,10 @@ router.get("/get/single/:listenerid", (req, res) => {
             listenerDoc.email,
             process.env.MONGOOSE_ENCRYPT_SECRET
           ),
+          number: fieldEncryption.decrypt(
+            listenerDoc.cell.number,
+            process.env.MONGOOSE_ENCRYPT_SECRET
+          ),
         },
       });
     })
@@ -49,7 +53,7 @@ router.get("/get/single/:listenerid", (req, res) => {
 //POSTs
 
 router.post("/register", (req, res) => {
-  const { userName, email, password } = req.body;
+  const { userName, email, number, password } = req.body;
   if (!userName) {
     res.status(401).json({ notSent: "userName" });
     return false;
@@ -63,13 +67,30 @@ router.post("/register", (req, res) => {
     return false;
   }
 
+  if (!number) {
+    res.status(401).json({ notSent: "number" });
+  }
+
+  const indianRe = / ^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$ /;
+
+  if (!number.match(indianRe)) {
+    res.status(401).json({ numberNotIndian: true });
+  }
+
   const encryptedEmail = fieldEncryption.encrypt(
     email,
     process.env.MONGOOSE_ENCRYPT_SECRET
   );
-
+  const encryptedNumber = fieldEncryption.encrypt(
+    number,
+    process.env.MONGOOSE_ENCRYPT_SECRET
+  );
   ListenerSchema.findOne({
-    $or: [{ email: encryptedEmail }, { userName: userName }],
+    $or: [
+      { "cell.number": encryptedNumber },
+      { email: encryptedEmail },
+      { userName: userName },
+    ],
   }).then((listenerDoc) => {
     if (listenerDoc.email === encryptedEmail) {
       res.status(401).json({ isSame: "email" });
@@ -77,9 +98,12 @@ router.post("/register", (req, res) => {
       res.status(401).json({ isSame: "userName" });
     } else if (
       listenerDoc.userName === userName &&
-      listenerDoc.email === encryptedEmail
+      listenerDoc.email === encryptedEmail &&
+      listenerDoc.cell.number === encryptedNumber
     ) {
       res.status(401).json({ isSame: "listener" });
+    } else if (listenerDoc.cell.number === encryptedNumber) {
+      res.status(401).json({ isSame: "number" });
     }
   });
 
@@ -89,7 +113,9 @@ router.post("/register", (req, res) => {
       userName: userName,
       email: email,
       password: hash,
-      "approvalStatus.approvalCode": _.random(100, 999) + _.random(1000, 9999),
+      "cell.number": number,
+      "activationStatus.activationCode":
+        _.random(100, 999) + _.random(1000, 9999),
     });
 
     Listener.save()
@@ -98,9 +124,10 @@ router.post("/register", (req, res) => {
           if (err) throw err;
           sendMail(
             email,
-            "Your Registeration at 247Buddy Requires Approval",
-            `Your approval code is: ${savedDoc.approvalStatus.approvalCode}. \n Please enter the above code into the specified field in the app.`
+            "Your Registeration at 247Buddy Requires activation",
+            `Your activation code is: ${savedDoc.activationStatus.activationCode}. \n Please enter the above code into the specified field in the app.`
           );
+          //put SMS here
           savedDoc.email = fieldEncryption.decrypt(
             savedDoc.email,
             process.env.MONGOOSE_ENCRYPT_SECRET
@@ -116,8 +143,8 @@ router.post("/register", (req, res) => {
 });
 
 router.post("/auth", (req, res) => {
-  const { email, userName, password } = req.body;
-  if (!email || !userName) {
+  const { email, userName, number, password } = req.body;
+  if (!email || !userName || !number) {
     res.status(401).json({ notSent: "loginString" });
   }
   if (!password) {
@@ -129,8 +156,17 @@ router.post("/auth", (req, res) => {
     process.env.MONGOOSE_ENCRYPT_SECRET
   );
 
+  const numberEncrypted = fieldEncryption.encrypt(
+    number,
+    process.env.MONGOOSE_ENCRYPT_SECRET
+  );
+
   ListenerSchema.findOne({
-    $or: [{ email: emailEncrypted }, { userName: userName }],
+    $or: [
+      { email: emailEncrypted },
+      { userName: userName },
+      { "cell.number": numberEncrypted },
+    ],
   })
     .then((listenerDoc) => {
       if (!listenerDoc) {
@@ -149,6 +185,10 @@ router.post("/auth", (req, res) => {
             listenerDoc.email,
             process.env.MONGOOSE_ENCRYPT_SECRET
           );
+          listenerDoc.number = fieldEncryption.decrypt(
+            listenerDoc.cell.number,
+            process.env.MONGOOSE_ENCRYPT_SECRET
+          );
           res.status(200).json({
             token: token,
             isUser: true,
@@ -163,70 +203,27 @@ router.post("/auth", (req, res) => {
 
 //PUTs
 
-router.put("/approve", ListenerAuth, (req, res) => {
+router.put("/activate", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
-  const approvalCode = req.body.approvalCode;
+  const activationCode = req.body.activationCode;
 
   ListenerSchema.findOne({ _id: listenerId }).then((listenerDoc) => {
-    if (listenerDoc.approvalStatus.approvalCode === approvalCode) {
+    if (listenerDoc.activationStatus.activationCode === activationCode) {
       ListenerSchema.findOneAndUpdate(
         { _id: listenerId },
         {
-          "approvalStatus.approved": true,
-          $set: { "approvalStatus.approvalDate": new Date() },
+          "activationStatus.activated": true,
+          $set: { "activationStatus.activationDate": new Date() },
         }
       )
-        .then(() => res.status(200).json({ isApproved: true }))
+        .then(() => res.status(200).json({ isActivated: true }))
         .catch((e) => console.log(e));
       return true;
     } else {
-      res.status(403).json({ isApproved: false });
+      res.status(403).json({ isActivated: false });
       return false;
     }
   });
-});
-
-router.put("/deactivate", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
-
-  ListenerSchema.findOneAndUpdate(
-    { _id: listenerId },
-    {
-      "activationStatus.active": false,
-      $set: { "activationStatus.deactivationDate": new Date() },
-    }
-  )
-    .then(() => res.status(200).json({ isDeactive: true }))
-    .catch((e) => console.log(e));
-});
-
-router.put("/ban/:listenerid", AdminAuth, (req, res) => {
-  const listenerId = req.params.listenerid;
-  const adminId = req.admin.id;
-  const endDate = req.body.endDate;
-
-  ListenerSchema.findByIdAndUpdate(
-    { _id: listenerId },
-    {
-      $push: {
-        "bannedStatus.formerBans": {
-          banDate: "bannedStatus.banDate",
-          expireDate: "bannedStatus.expireDate",
-        },
-      },
-      $set: {
-        "bannedStatus.banDate": new Date(),
-        "bannedStatus.expireDate": endDate,
-      },
-    }
-  )
-    .then(() => {
-      AdminSchema.findOneAndUpdate(
-        { _id: adminId },
-        { $push: { bannedListenersId: listenerId } }
-      ).then(() => res.status(200).json({ listenerBanned: true }));
-    })
-    .catch((e) => console.log(e));
 });
 
 router.put("/set/status", ListenerAuth, (req, res) => {
@@ -311,22 +308,39 @@ router.put("/set/avatar", ListenerAuth, (req, res) => {
   });
 });
 
-router.put("/change/email", ListenerAuth, (req, res) => {
+router.put("/change/email/on/activation", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
   const email = req.body.email;
   const activationCode = _.random(100, 999) + _.random(1000, 9999);
 
   ListenerSchema.findOneAndUpdate(
     { _id: listenerId },
-    { email: email, "approvalStatus.approvalCode": activationCode }
+    {
+      email: email,
+      "activationStatus.activationCode": activationCode,
+    }
   )
     .then(() => {
       sendMail(
         email,
-        "Your Registeration at 247Buddy Requires Approval",
-        `Your approval code is: ${activationCode}. \n Please enter the above code into the specified field in the app.`
+        "Your Registeration at 247Buddy Requires activation",
+        `Your activation code is: ${activationCode}. \n Please enter the above code into the specified field in the app.`
       );
       res.status(200).json({ emailChanged: true });
     })
     .catch((e) => console.log(e));
+});
+
+router.put("/change/email/in/use", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const email = req.body.email;
+  const activationCode = _.random(100, 999) + _.random(1000, 9999);
+
+  ListenerAuth.findOneAndUpdate(
+    { _id: listenerId },
+    { "activationStatus.activationCode": activationCode }
+  ).then(() => {
+    res.status(200).json({ verificationEmailSent: true });
+    res;
+  });
 });
