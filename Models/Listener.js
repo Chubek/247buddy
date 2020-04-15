@@ -48,8 +48,7 @@ const ListenrSchema = new Schema({
     {
       sessionId: String,
       reportedNumber: String,
-      reportReason: String,
-      reportResult: String,
+      reportmessage: String,
       reportDate: {
         type: Date,
         default: Date.now,
@@ -60,15 +59,14 @@ const ListenrSchema = new Schema({
     {
       sessionId: String,
       reporterNumber: String,
-      reportReason: String,
-      reportResult: String,
+      reportmessage: String,
       reportDate: {
         type: Date,
         default: Date.now,
       },
     },
   ],
-  bannedStatus: {    
+  bannedStatus: {
     banDate: Date,
     expireDate: Date,
     formerBans: Array,

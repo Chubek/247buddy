@@ -10,7 +10,7 @@ const BlockedNumbersSchema = Schema({
     type: Date,
     default: Date.now,
   },
-  reportedReason: String,
+  reportedMessage: String,
 });
 
 module.exports = mongoose.model("BlockedNumber", BlockedNumbersSchema);

@@ -14,9 +14,8 @@ const PairingSchema = new Schema({
   endHour: String,
   report: {
     reportedBy: String,
-    reportedReason: String,
-    reportResult: String,
     reportedMessage: String,
+    reportResult: String,
   },
 });
 

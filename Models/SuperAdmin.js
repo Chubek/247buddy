@@ -27,9 +27,8 @@ const SuperAdminSchema = require({
       process.env.AES_KEY
     ),
   },
-  loginDates: { type: [Date], default: Date.now },
-  numbersBlockedBy: { type: [String] },
-  adminIdsCreatedBy: { type: [String] },
+  loginDates: { type: [Date] },  
+  adminIdsCreatedBy: { type: [String] }
 });
 
 SuperAdminSchema.plugin(mongooseFieldEncryption, {

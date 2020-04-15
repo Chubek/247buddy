@@ -8,6 +8,8 @@ const colors = require("colors");
 
 const app = express();
 
+global.appRoot = path.resolve(__dirname);
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,9 +34,6 @@ const db = mongoose
 mongoose.set("useFindAndModify", false);
 
 app.use("/avatars", express.static(path.join(__dirname, "public/img/avatars")));
-
-
-
 
 /*app.get("/", function(req, res) {
   res.sendFile("index.html", { root: path.join(__dirname, "dist") });

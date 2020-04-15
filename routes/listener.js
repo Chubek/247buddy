@@ -8,6 +8,12 @@ const sendMail = require("../Middleware/Mailer");
 const _ = require("lodash");
 const ListenerAuth = require("../Middleware/ListenerAuth");
 const AdminSchema = require("../Models/Admin");
+const fs = require("fs");
+const randomstring = require("randomstring");
+const sha256File = require("sha256-file");
+const imagemin = require("imagemin");
+const imageminJpegtran = require("imagemin-jpegtran");
+const imageminPngquant = require("imagemin-pngquant");
 
 //GETs
 router.get("/get/all", (req, res) => {
@@ -232,5 +238,95 @@ router.put("/set/status", ListenerAuth, (req, res) => {
     { "status.online": status }
   )
     .then(() => res.status(200).json({ isOnline: status }))
+    .catch((e) => console.log(e));
+});
+
+router.put("/set/session", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const session = req.body.session;
+
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    { "status.currentEngagedSessionId": session }
+  )
+    .then(() => {
+      res.status(200).json({ session: session });
+    })
+    .catch((e) => console.log(e));
+});
+
+router.put("/set/avatar", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).json({ filesUploaded: false });
+  }
+
+  const avatar = req.files.avatar;
+  const extension = avatar.name.split(".").pop();
+
+  const path = appRoot + "/public/img/avatars/" + listenerId;
+
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+  const avatarFileName = "Avatar_" + randomstring(4) + "." + extension;
+  const filePath = path + "/" + avatarFileName;
+
+  avatar.mv(filePath, (err) => {
+    if (err) throw err;
+
+    async () => {
+      await imagemin(filePath, {
+        destination: path,
+        plugins: [
+          imageminJpegtran(),
+          imageminPngquant({ quality: [0.5, 0.6] }),
+        ],
+      });
+    };
+
+    sha256File(filePath, (err, checksum) => {
+      if (err) throw err;
+
+      ListenerSchema.findOne({ _id: listenerId }).then((listenerDoc) => {
+        if (listenerDoc.avatar.src) {
+          fs.unlinkSync(listenerDoc.avatar.src);
+        }
+
+        ListenerSchema.findOneAndUpdate(
+          { _id: listenerId },
+          {
+            $set: { "avatar.src": filePath, "avatar.sha256": checksum },
+          }
+        )
+          .then(() =>
+            res.status(200).json({
+              avatarPath: filePath,
+              avatarName: avatarFileName,
+            })
+          )
+          .catch((e) => console.log(e));
+      });
+    });
+  });
+});
+
+router.put("/change/email", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const email = req.body.email;
+  const activationCode = _.random(100, 999) + _.random(1000, 9999);
+
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    { email: email, "approvalStatus.approvalCode": activationCode }
+  )
+    .then(() => {
+      sendMail(
+        email,
+        "Your Registeration at 247Buddy Requires Approval",
+        `Your approval code is: ${activationCode}. \n Please enter the above code into the specified field in the app.`
+      );
+      res.status(200).json({ emailChanged: true });
+    })
     .catch((e) => console.log(e));
 });
