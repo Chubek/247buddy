@@ -28,10 +28,14 @@ const AdminSchema = Schema({
   loginDates: { type: [Date], default: Date.now },
   numbersBlockedBy: { type: [String] },
   bannedListenersId: [String],
+  bannedStatus: {
+    banned: Boolean,
+    banDate: Date,
+  },
 });
 
 AdminSchema.plugin(mongooseFieldEncryption, {
-  fields: ["email", "password", "userName", "phoneNumber"],
+  fields: ["email", "userName", "phoneNumber"],
   secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });
 

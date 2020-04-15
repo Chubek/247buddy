@@ -17,6 +17,7 @@ const ListenrSchema = new Schema({
     type: String,
     unique: true,
   },
+  emailVerificationCode: Number,
   cell: {
     number: String,
     activated: {

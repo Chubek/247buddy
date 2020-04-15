@@ -17,13 +17,9 @@ const imageminPngquant = require("imagemin-pngquant");
 
 //GETs
 router.get("/get/all", (req, res) => {
-  const ret = [];
   ListenerSchema.find({})
     .then((listenerDocs) => {
-      listenerDocs.forEach((listener) => {
-        ret.push({ id: listener._id, userName: listener.userName });
-      });
-      res.status(200).json({ listenerDocs: ret });
+      res.status(200).json({ listenerDocs });
     })
     .catch((e) => console.log(e));
 });
@@ -33,18 +29,7 @@ router.get("/get/single/:listenerid", (req, res) => {
   ListenerSchema.findOne({ _id: listenerId })
     .then((listenerDoc) => {
       res.status(200).json({
-        listenerDoc: {
-          id: listenerDoc._id,
-          userName: listenerDoc.userName,
-          email: fieldEncryption.decrypt(
-            listenerDoc.email,
-            process.env.MONGOOSE_ENCRYPT_SECRET
-          ),
-          number: fieldEncryption.decrypt(
-            listenerDoc.cell.number,
-            process.env.MONGOOSE_ENCRYPT_SECRET
-          ),
-        },
+        listenerDoc,
       });
     })
     .catch((e) => console.log(e));
@@ -120,7 +105,7 @@ router.post("/register", (req, res) => {
 
     Listener.save()
       .then((savedDoc) => {
-        jwt.sign({ id: savedDoc._id }, process.env.JWT_KEY, (err, token) => {
+        jwt.sign({ id: savedDoc._id }, process.env.JWT_SECRET, (err, token) => {
           if (err) throw err;
           sendMail(
             email,
@@ -134,7 +119,7 @@ router.post("/register", (req, res) => {
           );
           res.status(200).json({
             token: token,
-            listenerDoc: { id: savedDoc._id, savedDoc },
+            listenerDoc: savedDoc,
           });
         });
       })
@@ -179,23 +164,19 @@ router.post("/auth", (req, res) => {
           res.status(403).json({ isUser: true, matchPassword: false });
           return false;
         }
-        jwt.sign({ id: listenerDoc._id }, process.env.JWT_KEY, (err, token) => {
-          if (err) throw err;
-          listenerDoc.email = fieldEncryption.decrypt(
-            listenerDoc.email,
-            process.env.MONGOOSE_ENCRYPT_SECRET
-          );
-          listenerDoc.number = fieldEncryption.decrypt(
-            listenerDoc.cell.number,
-            process.env.MONGOOSE_ENCRYPT_SECRET
-          );
-          res.status(200).json({
-            token: token,
-            isUser: true,
-            matchPassword: true,
-            listenerDoc,
-          });
-        });
+        jwt.sign(
+          { id: listenerDoc._id },
+          process.env.JWT_SECRET,
+          (err, token) => {
+            if (err) throw err;
+            res.status(200).json({
+              token: token,
+              isUser: true,
+              matchPassword: true,
+              listenerDoc,
+            });
+          }
+        );
       });
     })
     .catch((e) => console.log(e));
@@ -317,6 +298,7 @@ router.put("/change/email/on/activation", ListenerAuth, (req, res) => {
     { _id: listenerId },
     {
       email: email,
+      __enc_email: false,
       "activationStatus.activationCode": activationCode,
     }
   )
@@ -334,13 +316,70 @@ router.put("/change/email/on/activation", ListenerAuth, (req, res) => {
 router.put("/change/email/in/use", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
   const email = req.body.email;
-  const activationCode = _.random(100, 999) + _.random(1000, 9999);
+  const verificationCode = _.random(100, 999) + _.random(1000, 9999);
 
   ListenerAuth.findOneAndUpdate(
     { _id: listenerId },
-    { "activationStatus.activationCode": activationCode }
+    { emailVerificationCode: verificationCode }
   ).then(() => {
+    sendMail(
+      email,
+      "Your Email Change at 247Buddy Requires Verification",
+      `Your verification code is: ${verificationCode}. \n Please enter the above code into the specified field in the app.`
+    );
     res.status(200).json({ verificationEmailSent: true });
     res;
   });
+});
+
+router.put("/change/email/in/use", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const email = req.body.email;
+
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    { email: email, __enc_email: false }
+  )
+    .then(() => res.status(200).json({ emailChanged: true }))
+    .catch((e) => console.log(e));
+});
+
+router.put("/change/password", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const { oldPassword, newPassword } = req.body;
+
+  ListenerSchema.findOne({ _id: listenerId }).then((listenerDoc) => {
+    bcrypt.compare(oldPassword, listenerDoc.password, (err, isMatch) => {
+      if (err) throw err;
+      if (isMatch) {
+        bcrypt.hash(newPassword, 12, (err, hash) => {
+          if (err) throw err;
+          ListenerSchema.findOneAndUpdate(
+            { _id: listenerId },
+            { password: hash }
+          )
+            .then(() => res.status(200).json({ passwordChanged: true }))
+            .catch((e) => console.log(e));
+        });
+      }
+    });
+  });
+});
+
+router.put("/session/disconnect", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+
+  ListenerSchema.findOne({ _id: listenerId })
+    .then((listenerDoc) => {
+      ListenerSchema.findOneAndUpdate(
+        { _id: listenerId },
+        {
+          "status.currentEngagedSessionId": "None",
+          $addToSet: { sessionIds: listenerDoc.status.currentEngagedSessionId },
+        }
+      )
+        .then(() => res.status(200).json({ disconnected: true }))
+        .catch((e) => console.log(e));
+    })
+    .catch((e) => console.log(e));
 });

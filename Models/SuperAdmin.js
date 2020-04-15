@@ -4,6 +4,7 @@ const mongooseFieldEncryption = require("mongoose-field-encryption")
   .fieldEncryption;
 const Schema = mongoose.Schema;
 const CryptoJS = require("crypto-js");
+const bcrypt = require("bcrypt");
 
 const SuperAdminSchema = require({
   userName: {
@@ -22,17 +23,14 @@ const SuperAdminSchema = require({
   },
   password: {
     type: String,
-    default: CryptoJS.AES.encrypt(
-      process.env.SUPERADMIN_PASSWORD,
-      process.env.AES_KEY
-    ),
+    default: bcrypt.hashSync(process.env.SUPERADMIN_PASSWORD, 12),
   },
   loginDates: { type: [Date] },
   adminIdsCreatedBy: { type: [String] },
 });
 
 SuperAdminSchema.plugin(mongooseFieldEncryption, {
-  fields: ["email", "password", "userName"],
+  fields: ["email", "userName"],
   secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });
 
