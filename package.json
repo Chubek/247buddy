@@ -17,10 +17,15 @@
   },
   "homepage": "https://github.com/Chubek/247buddy#readme",
   "dependencies": {
+    "bcrypt": "^4.0.1",
     "colors": "^1.4.0",
+    "cors": "^2.8.5",
     "crypto-js": "^4.0.0",
     "devenv": "^1.0.1",
     "express": "^4.17.1",
+    "express-fileupload": "^1.1.7-alpha.3",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
     "mongoose": "^5.9.9",
     "mongoose-field-encryption": "3.0.4",
     "nodemailer": "^6.4.6"

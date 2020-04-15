@@ -1,4 +1,4 @@
-require("dotenv");
+require("dotenv").config({ path: "../.env" });
 const mongoose = require("mongoose");
 const mongooseFieldEncryption = require("mongoose-field-encryption")
   .fieldEncryption;
@@ -27,6 +27,7 @@ const AdminSchema = Schema({
   },
   loginDates: { type: [Date], default: Date.now },
   numbersBlockedBy: { type: [String] },
+  bannedListenersId: [String],
 });
 
 AdminSchema.plugin(mongooseFieldEncryption, {

@@ -1,4 +1,4 @@
-require("dotenv");
+require("dotenv").config({ path: "../.env" });
 const mongoose = require("mongoose");
 const mongooseFieldEncryption = require("mongoose-field-encryption")
   .fieldEncryption;

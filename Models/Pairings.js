@@ -19,3 +19,5 @@ const PairingSchema = new Schema({
     reportedMessage: String,
   },
 });
+
+module.exports = mongoose.model("Pairing", PairingSchema);

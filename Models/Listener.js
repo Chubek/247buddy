@@ -1,4 +1,4 @@
-require("dotenv");
+require("dotenv").config({ path: "../.env" });
 const mongoose = require("mongoose");
 const mongooseFieldEncryption = require("mongoose-field-encryption")
   .fieldEncryption;
@@ -21,9 +21,20 @@ const ListenrSchema = new Schema({
     type: String,
     required: true,
   },
-  approvedStatus: {
-    type: Boolean,
+  approvalStatus: {
+    approved: {
+      type: Boolean,
+      default: false,
+    },
     approvalDate: Date,
+    approvalCode: Number,
+  },
+  activationStatus: {
+    active: {
+      type: Boolean,
+      default: true,
+    },
+    deactivationDate: Date,
   },
   avatar: {
     src: String,
@@ -57,14 +68,13 @@ const ListenrSchema = new Schema({
       },
     },
   ],
-  bannedStatus: {
-    banned: Boolean,
+  bannedStatus: {    
     banDate: Date,
     expireDate: Date,
-    formerBans: [],
+    formerBans: Array,
   },
   sessionIds: [String],
-  stati: {
+  status: {
     currentEngagedSessionId: String, //if disengaged, will be "None"
     online: Boolean,
   },
