@@ -26,7 +26,10 @@ router.post("/create", (req, res) => {
     superAdmin
       .save()
       .then(() => res.status(200).json({ superAdminCreated: true }))
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   } else if (!isDefault) {
     const userNameEnc = CryptoJS.AES.encrypt(userName, process.env.AES_KEY);
     const emailEnc = CryptoJS.AES.encrypt(email, process.env.AES_KEY);
@@ -43,7 +46,10 @@ router.post("/create", (req, res) => {
       superAdmin
         .save()
         .then(() => res.status(200).json({ superAdminCreated: true }))
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.error(e);
+          res.sendStatus(500);
+        });
     });
   }
 });
@@ -101,7 +107,10 @@ router.put("/edit/info", SuperAdminAuth, (req, res) => {
     { userName: userNameEnc, email: emailEnc }
   )
     .then(() => res.status(200).json({ superUpdated: true }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/change/password", SuperAdminAuth, (req, res) => {
@@ -119,7 +128,10 @@ router.put("/change/password", SuperAdminAuth, (req, res) => {
             { password: hash }
           )
             .then(() => res.status(200).json({ passwordChanged: true }))
-            .catch((e) => console.log(e));
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
         });
       }
     });
@@ -182,9 +194,15 @@ router.post("/create/admin", SuperAdminAuth, (req, res) => {
         { $push: { adminIdsCreatedBy: savedDoc._id } }
       )
         .then(() => res.status(200).json({ adminCreated: true }))
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.error(e);
+          res.sendStatus(500);
+        });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/delete/admin", SuperAdminAuth, (req, res) => {
@@ -195,5 +213,8 @@ router.put("/delete/admin", SuperAdminAuth, (req, res) => {
     { "bannedStatus.banned": true, "bannedStatus.banDate": new Date() }
   )
     .then(() => res.status(200).json({ adminBanned: true }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });

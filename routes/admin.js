@@ -28,7 +28,10 @@ router.get("/get/all", SuperAdminAuth, (req, res) => {
       });
       res.status(200).json({ adminDocs });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.get("/get/single/:adminid", SuperAdminAuth, (req, res) => {
@@ -53,7 +56,10 @@ router.get("/get/single/:adminid", SuperAdminAuth, (req, res) => {
       );
       res.status(200).json({ adminDoc });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 //POSTs
@@ -113,7 +119,10 @@ router.post("/auth", (req, res) => {
               );
               res.status(200).json({ token: token, adminDoc });
             })
-            .catch((e) => console.log(e));
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
         });
       } else {
         res.status(403).json({ passwordCorrect: false });
@@ -153,7 +162,10 @@ router.put("/edit/info", AdminAuth, (req, res) => {
     }
   )
     .then(() => res.status(200).json({ adminEdited: true }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/change/password", AdminAuth, (req, res) => {
@@ -168,7 +180,10 @@ router.put("/change/password", AdminAuth, (req, res) => {
           if (err) throw err;
           AdminSchema.findOneAndUpdate({ _id: adminId }, { password: hash })
             .then(() => res.status(200).json({ passwordChanged: true }))
-            .catch((e) => console.log(e));
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
         });
       }
     });
@@ -187,7 +202,10 @@ router.put("/set/approval/:listenerid", AdminAuth, (req, res) => {
     }
   )
     .then(() => res.status(200).json({ isApproved: approval }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/ban/:listenerid", AdminAuth, (req, res) => {
@@ -216,5 +234,8 @@ router.put("/ban/:listenerid", AdminAuth, (req, res) => {
         { $push: { bannedListenersId: listenerId } }
       ).then(() => res.status(200).json({ listenerBanned: true }));
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });

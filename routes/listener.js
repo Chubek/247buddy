@@ -21,7 +21,10 @@ router.get("/get/all", (req, res) => {
     .then((listenerDocs) => {
       res.status(200).json({ listenerDocs });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.get("/get/single/:listenerid", (req, res) => {
@@ -36,7 +39,10 @@ router.get("/get/single/:listenerid", (req, res) => {
         listenerDoc,
       });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.get("/get/username", ListenerAuth, (req, res) => {
@@ -50,7 +56,10 @@ router.get("/get/username", ListenerAuth, (req, res) => {
       }
       res.status(200).json({ userName: listenerDoc.userName });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 //POSTs
@@ -142,7 +151,10 @@ router.post("/register", (req, res) => {
           });
         });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   });
 });
 
@@ -198,7 +210,10 @@ router.post("/auth", (req, res) => {
         );
       });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 //PUTs
@@ -217,7 +232,10 @@ router.put("/activate", ListenerAuth, (req, res) => {
         }
       )
         .then(() => res.status(200).json({ isActivated: true }))
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.error(e);
+          res.sendStatus(500);
+        });
       return true;
     } else {
       res.status(403).json({ isActivated: false });
@@ -235,7 +253,10 @@ router.put("/set/status", ListenerAuth, (req, res) => {
     { "status.online": status }
   )
     .then(() => res.status(200).json({ isOnline: status }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/set/session", ListenerAuth, (req, res) => {
@@ -249,7 +270,10 @@ router.put("/set/session", ListenerAuth, (req, res) => {
     .then(() => {
       res.status(200).json({ session: session });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/set/avatar", ListenerAuth, (req, res) => {
@@ -302,7 +326,10 @@ router.put("/set/avatar", ListenerAuth, (req, res) => {
               avatarName: avatarFileName,
             })
           )
-          .catch((e) => console.log(e));
+          .catch((e) => {
+            console.error(e);
+            res.sendStatus(500);
+          });
       });
     });
   });
@@ -329,7 +356,10 @@ router.put("/change/email/on/activation", ListenerAuth, (req, res) => {
       );
       res.status(200).json({ emailChanged: true });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/change/email/in/use", ListenerAuth, (req, res) => {
@@ -360,7 +390,10 @@ router.put("/change/email/in/use", ListenerAuth, (req, res) => {
     { email: email, __enc_email: false }
   )
     .then(() => res.status(200).json({ emailChanged: true }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/change/password", ListenerAuth, (req, res) => {
@@ -378,7 +411,10 @@ router.put("/change/password", ListenerAuth, (req, res) => {
             { password: hash }
           )
             .then(() => res.status(200).json({ passwordChanged: true }))
-            .catch((e) => console.log(e));
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
         });
       }
     });
@@ -396,7 +432,10 @@ router.put("/set/categories", ListenerAuth, (req, res) => {
     .then(() => {
       res.status(200).json({ categoriesSet: true });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put("/go/offline", ListenerAuth, (req, res) => {
@@ -407,5 +446,8 @@ router.put("/go/offline", ListenerAuth, (req, res) => {
     { "status.online": false }
   )
     .then(() => res.status(200).json({ userOffline: true }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });

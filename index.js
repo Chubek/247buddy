@@ -29,8 +29,8 @@ const db = mongoose
       process.env.DB_NAME,
     { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }
   )
-  .then(() => console.log("MongoDB Connected".green.inverse))
-  .catch((e) => console.log(`${e}`.underline.red));
+  .then(() => console.error("MongoDB Connected".green.inverse))
+  .catch((e) => console.error(`${e}`.underline.red));
 mongoose.set("useFindAndModify", false);
 
 app.use("/avatars", express.static(path.join(__dirname, "public/img/avatars")));
@@ -42,5 +42,5 @@ app.use("/avatars", express.static(path.join(__dirname, "public/img/avatars")));
 const port = process.env.PORT || 5000;
 
 app.listen(port, () =>
-  console.log(`Server started on port ${port}`.blue.inverse)
+  console.error(`Server started on port ${port}`.blue.inverse)
 );

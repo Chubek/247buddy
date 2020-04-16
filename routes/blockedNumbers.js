@@ -22,7 +22,10 @@ router.post("/block", AdminAuth, (req, res) => {
       { $set: { $push: { numbersBlockedId: savedDoc._id } } }
     )
       .then(() => res.status(200).json({ numberBlocked: true }))
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   });
 });
 
@@ -35,5 +38,8 @@ router.get("/get/single/:blockid", AdminAuth, (req, res) => {
       }
       res.status(200).json({ blockDoc });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });

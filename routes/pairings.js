@@ -39,7 +39,10 @@ router.post("/pairup/randomly", (req, res) => {
           sessionDoc: savedDoc,
         });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   });
 });
 
@@ -75,7 +78,10 @@ router.post("/pairup/category", (req, res) => {
           sessionDoc: savedDoc,
         });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   });
 });
 
@@ -136,11 +142,20 @@ router.put("/disconnect", ListenerAuth, (req, res) => {
             { seekerNumber: null }
           )
             .then(() => res.status(200).json({ disconnected: true }))
-            .catch((e) => console.log(e));
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.error(e);
+          res.sendStatus(500);
+        });
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.put(
@@ -175,9 +190,15 @@ router.put(
           }
         )
           .then(() => res.status(200).json({ reported: true }))
-          .catch((e) => console.log(e));
+          .catch((e) => {
+            console.error(e);
+            res.sendStatus(500);
+          });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   }
 );
 
@@ -213,20 +234,32 @@ router.put(
           }
         )
           .then(() => res.status(200).json({ reported: true }))
-          .catch((e) => console.log(e));
+          .catch((e) => {
+            console.error(e);
+            res.sendStatus(500);
+          });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   }
 );
 
 router.get("/get/all", (req, res) => {
   PairingSchema.find({})
     .then((sessionDocs) => res.status(200).json({ sessionDocs }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.get("/get/single/:sessionid", (req, res) => {
   PairingSchema.findOne({ _id: req.params.sessionid })
     .then((sessionDoc) => res.status(200).json({ sessionDoc }))
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
