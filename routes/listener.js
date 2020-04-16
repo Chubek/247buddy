@@ -217,6 +217,8 @@ router.post("/auth", (req, res) => {
                   console.error(e);
                   res.sendStatus(500);
                 });
+            } else {
+              res.status(200).json({ token: token, listenerDoc });
             }
           }
         );
