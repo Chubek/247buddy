@@ -18,6 +18,10 @@ const ListenrSchema = new Schema({
     unique: true,
   },
   emailVerificationCode: Number,
+  emailedVerified: {
+    type: Boolean,
+    default: false,
+  },
   cell: {
     number: String,
     activated: {
@@ -25,17 +29,13 @@ const ListenrSchema = new Schema({
       default: true,
     },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  activationStatus: {
-    activated: {
+  otp: {
+    password: String,
+    creationHour: String,
+    used: {
       type: Boolean,
       default: false,
     },
-    activationDate: Date,
-    activationCode: Number,
   },
   approvalStatus: {
     approved: {
@@ -81,7 +81,7 @@ const ListenrSchema = new Schema({
 });
 
 ListenrSchema.plugin(mongooseFieldEncryption, {
-  fields: ["email", "number"],
+  fields: ["email", "number", "otp.password"],
   secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });
 

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Chubek/247buddy#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

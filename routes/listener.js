@@ -4,7 +4,7 @@ const fieldEncryption = require("mongoose-field-encryption");
 const ListenerSchema = require("../Models/Listener");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const sendMail = require("../Middleware/Mailer");
+const sendMail = require("../Services/Mailer");
 const _ = require("lodash");
 const ListenerAuth = require("../Middleware/ListenerAuth");
 const AdminSchema = require("../Models/Admin");
@@ -14,7 +14,8 @@ const sha256File = require("sha256-file");
 const imagemin = require("imagemin");
 const imageminJpegtran = require("imagemin-jpegtran");
 const imageminPngquant = require("imagemin-pngquant");
-
+const SendOTP = require("../Services/SendOTP");
+const asyncHandler = require("express-async-handler");
 //GETs
 router.get("/get/all", (req, res) => {
   ListenerSchema.find({})
@@ -65,17 +66,16 @@ router.get("/get/username", ListenerAuth, (req, res) => {
 //POSTs
 
 router.post("/register", (req, res) => {
-  const { userName, email, number, password, categories } = req.body;
+  const { userName, email, number, categories } = req.body;
+  const password = _.random(100, 999) + _.random(1000, 9999);
+  const emailVerificationCode = _.random(100, 999) + _.random(1000, 9999);
+
   if (!userName) {
     res.status(401).json({ notSent: "userName" });
     return false;
   }
   if (!email) {
     res.status(401).json({ notSent: "email" });
-    return false;
-  }
-  if (!password) {
-    res.status(401).json({ notSent: "password" });
     return false;
   }
 
@@ -119,43 +119,48 @@ router.post("/register", (req, res) => {
     }
   });
 
-  bcrypt.hash(password, 12, (err, hash) => {
-    if (err) throw err;
-    const Listener = new ListenerSchema({
-      userName: userName,
-      email: email,
-      password: hash,
-      "cell.number": number,
-      $addToSet: { categories: { $each: categories } },
-      "activationStatus.activationCode":
-        _.random(100, 999) + _.random(1000, 9999),
-    });
-
-    Listener.save()
-      .then((savedDoc) => {
-        jwt.sign({ id: savedDoc._id }, process.env.JWT_SECRET, (err, token) => {
-          if (err) throw err;
-          sendMail(
-            email,
-            "Your Registeration at 247Buddy Requires activation",
-            `Your activation code is: ${savedDoc.activationStatus.activationCode}. \n Please enter the above code into the specified field in the app.`
-          );
-          //put SMS here
-          savedDoc.email = fieldEncryption.decrypt(
-            savedDoc.email,
-            process.env.MONGOOSE_ENCRYPT_SECRET
-          );
-          res.status(200).json({
-            token: token,
-            listenerDoc: savedDoc,
-          });
-        });
-      })
-      .catch((e) => {
-        console.error(e);
-        res.sendStatus(500);
-      });
+  const Listener = new ListenerSchema({
+    userName: userName,
+    email: email,
+    "otp.password": password,
+    "otp.creationHour": new Date().toISOString().substr(11, 5).replace(":", ""),
+    "cell.number": number,
+    $addToSet: { categories: { $each: categories } },
+    emailVerificationCode: emailVerificationCode,
   });
+
+  Listener.save()
+    .then((savedDoc) => {
+      jwt.sign({ id: savedDoc._id }, process.env.JWT_SECRET, (err, token) => {
+        if (err) throw err;
+        sendMail(
+          email,
+          "Your Registeration at 247Buddy Requires activation",
+          `Your activation code is: ${emailVerificationCode}. \n Please enter the above code into the specified field in the app.`
+        )
+          .then(() => {
+            SendOTP(password, number)
+              .then(() => {
+                res.status(200).json({
+                  token: token,
+                  listenerDoc: savedDoc,
+                });
+              })
+              .catch((e) => {
+                console.error(e);
+                res.sendStatus(500);
+              });
+          })
+          .catch((e) => {
+            console.error(e);
+            res.sendStatus(500);
+          });
+      });
+    })
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
 });
 
 router.post("/auth", (req, res) => {
@@ -189,26 +194,33 @@ router.post("/auth", (req, res) => {
         res.status(404).json({ isUser: false });
         return false;
       }
-      bcrypt.compare(password, listenerDoc.password, (err, match) => {
-        if (err) throw err;
-        if (!match) {
-          res.status(403).json({ isUser: true, matchPassword: false });
-          return false;
-        }
+      const now = parseInt(
+        new Date().toISOString().substr(11, 5).replace(":", "")
+      );
+      const passwordTime = parseInt(listenerDoc.otp.creationHour);
+      const difference = now - passwordTime;
+
+      if (listenerDoc.otp.password === password && difference < 159) {
         jwt.sign(
           { id: listenerDoc._id },
           process.env.JWT_SECRET,
           (err, token) => {
             if (err) throw err;
-            res.status(200).json({
-              token: token,
-              isUser: true,
-              matchPassword: true,
-              listenerDoc,
-            });
+            if (listenerDoc.cell.activated == false) {
+              listenerDoc
+                .findOneAndUpdate(
+                  { _id: listenerDoc._id },
+                  { "cell.activated": true }
+                )
+                .then(() => res.status(200).json({ token: token, listenerDoc }))
+                .catch((e) => {
+                  console.error(e);
+                  res.sendStatus(500);
+                });
+            }
           }
         );
-      });
+      }
     })
     .catch((e) => {
       console.error(e);
@@ -218,27 +230,26 @@ router.post("/auth", (req, res) => {
 
 //PUTs
 
-router.put("/activate", ListenerAuth, (req, res) => {
+router.put("/verify/email", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
   const activationCode = req.body.activationCode;
 
   ListenerSchema.findOne({ _id: listenerId }).then((listenerDoc) => {
-    if (listenerDoc.activationStatus.activationCode === activationCode) {
+    if (listenerDoc.emailVerificationCode === activationCode) {
       ListenerSchema.findOneAndUpdate(
         { _id: listenerId },
         {
-          "activationStatus.activated": true,
-          $set: { "activationStatus.activationDate": new Date() },
+          emailVerified: true,
         }
       )
-        .then(() => res.status(200).json({ isActivated: true }))
+        .then(() => res.status(200).json({ emailIsVerified: true }))
         .catch((e) => {
           console.error(e);
           res.sendStatus(500);
         });
       return true;
     } else {
-      res.status(403).json({ isActivated: false });
+      res.status(403).json({ emailIsVerified: false });
       return false;
     }
   });
@@ -335,65 +346,28 @@ router.put("/set/avatar", ListenerAuth, (req, res) => {
   });
 });
 
-router.put("/change/email/on/activation", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
-  const email = req.body.email;
-  const activationCode = _.random(100, 999) + _.random(1000, 9999);
-
-  ListenerSchema.findOneAndUpdate(
-    { _id: listenerId },
-    {
-      email: email,
-      __enc_email: false,
-      "activationStatus.activationCode": activationCode,
-    }
-  )
-    .then(() => {
-      sendMail(
-        email,
-        "Your Registeration at 247Buddy Requires activation",
-        `Your activation code is: ${activationCode}. \n Please enter the above code into the specified field in the app.`
-      );
-      res.status(200).json({ emailChanged: true });
-    })
-    .catch((e) => {
-      console.error(e);
-      res.sendStatus(500);
-    });
-});
-
-router.put("/change/email/in/use", ListenerAuth, (req, res) => {
+router.put("/change/email", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
   const email = req.body.email;
   const verificationCode = _.random(100, 999) + _.random(1000, 9999);
 
   ListenerAuth.findOneAndUpdate(
     { _id: listenerId },
-    { emailVerificationCode: verificationCode }
+    { emailVerificationCode: verificationCode, emailVerified: false }
   ).then(() => {
     sendMail(
       email,
       "Your Email Change at 247Buddy Requires Verification",
       `Your verification code is: ${verificationCode}. \n Please enter the above code into the specified field in the app.`
-    );
-    res.status(200).json({ verificationEmailSent: true });
-    res;
+    )
+      .then(() => {
+        res.status(200).json({ verificationEmailSent: true });
+      })
+      .catch((e) => {
+        console.error(e);
+        res.sendStatus(500);
+      });
   });
-});
-
-router.put("/change/email/in/use", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
-  const email = req.body.email;
-
-  ListenerSchema.findOneAndUpdate(
-    { _id: listenerId },
-    { email: email, __enc_email: false }
-  )
-    .then(() => res.status(200).json({ emailChanged: true }))
-    .catch((e) => {
-      console.error(e);
-      res.sendStatus(500);
-    });
 });
 
 router.put("/change/password", ListenerAuth, (req, res) => {
