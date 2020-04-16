@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const mongooseFieldEncryption = require("mongoose-field-encryption")
+  .fieldEncryption;
 
 const BlockedNumbersSchema = Schema({
   blockedNumber: {
@@ -11,6 +13,11 @@ const BlockedNumbersSchema = Schema({
     default: Date.now,
   },
   reportedMessage: String,
+});
+
+AdminSchema.plugin(mongooseFieldEncryption, {
+  fields: ["blockedNumber"],
+  secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });
 
 module.exports = mongoose.model("BlockedNumber", BlockedNumbersSchema);
