@@ -72,7 +72,16 @@ router.post("/auth", (req, res) => {
 
       if (isMatch) {
         jwt.sign({ id: superDoc._id }, process.env.JWT_SECRET, (err, token) => {
-          if (err) throw err;
+            if (err) throw err;
+            superDoc.userName = CryptoJS.AES.decrypt(
+              superDoc.userName,
+              process.env.AES_KEY
+            );
+            superDoc.email = CryptoJS.AES.decrypt(
+              superDoc.email,
+              process.env.AES_KEY
+            );
+            
           res.status(200).json({ token: token, superDoc });
         });
       }

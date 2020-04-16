@@ -11,13 +11,41 @@ const SuperAdminAuth = require("../Middleware/SuperAdminAuth");
 //GETs
 router.get("/get/all", SuperAdminAuth, (req, res) => {
   AdminSchema.find({})
-    .then((adminDocs) => res.status(200).json({ adminDocs }))
+    .then((adminDocs) => {
+      adminDocs.forEach((adminDoc) => {
+        adminDoc.userName = CryptoJS.AES.decrypt(
+          adminDoc.userName,
+          process.env.AES_KEY
+        );
+        adminDoc.email = CryptoJS.AES.decrypt(
+          adminDoc.email,
+          process.env.AES_KEY
+        );
+        adminDoc.phoneNumber = CryptoJS.AES.decrypt(
+          adminDoc.phoneNumber,
+          process.env.AES_KEY
+        );
+      });
+      res.status(200).json({ adminDocs });
+    })
     .catch((e) => console.log(e));
 });
 
 router.get("/get/single/:adminid", SuperAdminAuth, (req, res) => {
   AdminSchema.findOne({ _id: req.params.adminid })
     .then((adminDoc) => {
+      adminDoc.userName = CryptoJS.AES.decrypt(
+        adminDoc.userName,
+        process.env.AES_KEY
+      );
+      adminDoc.email = CryptoJS.AES.decrypt(
+        adminDoc.email,
+        process.env.AES_KEY
+      );
+      adminDoc.phoneNumber = CryptoJS.AES.decrypt(
+        adminDoc.phoneNumber,
+        process.env.AES_KEY
+      );
       res.status(200).json({ adminDoc });
     })
     .catch((e) => console.log(e));
@@ -65,7 +93,21 @@ router.post("/auth", (req, res) => {
             },
             { $push: { loginDates: new Date() } }
           )
-            .then(() => res.status(200).json({ token: token, adminDoc }))
+            .then(() => {
+              adminDoc.userName = CryptoJS.AES.decrypt(
+                adminDoc.userName,
+                process.env.AES_KEY
+              );
+              adminDoc.email = CryptoJS.AES.decrypt(
+                adminDoc.email,
+                process.env.AES_KEY
+              );
+              adminDoc.phoneNumber = CryptoJS.AES.decrypt(
+                adminDoc.phoneNumber,
+                process.env.AES_KEY
+              );
+              res.status(200).json({ token: token, adminDoc });
+            })
             .catch((e) => console.log(e));
         });
       } else {
