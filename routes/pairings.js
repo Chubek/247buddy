@@ -6,9 +6,11 @@ const _ = require("lodash");
 const PairingSchema = require("../Models/Pairings");
 const SeekerAuth = require("../Middleware/SeekerAuth");
 const auths = { SeekerAuth, ListenerAuth };
+const faker = require("faker");
 
 router.post("/pairup/randomly", (req, res) => {
   const seekerNumber = req.body.seekerNumber;
+  const seekerNick = faker.internet.userName();
 
   ListenerSchema.find({
     "status.online": true,
@@ -17,44 +19,35 @@ router.post("/pairup/randomly", (req, res) => {
   }).then((listenerDocs) => {
     listenerDocs = _.shuffle(listenerDocs);
     const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];
+    const presentedListeners = [];
+    selection.forEach((selectedListener) => {
+      presentedListeners.push(selectedListener._id);
+    });
 
-    jwt.sign(
-      { id: selection._id },
-      process.env.JWT_SECRET,
-      (err, listenerToken) => {
-        if (err) throw err;
-        jwt.sign(
-          { number: seekerNumber },
-          process.env.JWT_SECRET,
-          (err, seekerToken) => {
-            if (err) throw err;
+    const pairing = new PairingSchema({
+      $push: {
+        presentedListeners: { $each: presentedListeners },
+        seekerNumber: seekerNumber,
+        seekerNick: seekerNick,
+      },
+    });
 
-            const pairing = new PairingSchema({
-              lisnerId: selection._id,
-              seekerNumber: seekerNumber,
-            });
-
-            pairing
-              .save()
-              .then((savedDoc) => {
-                res.status(200).json({
-                  listenerToken: listenerToken,
-                  seekerToken: seekerToken,
-                  savedDoc,
-                });
-              })
-              .catch((e) => console.log(e));
-          }
-        );
-      }
-    );
+    pairing
+      .save()
+      .then((savedDoc) => {
+        res.status(200).json({
+          presentedListeners: presentedListeners,
+          sessionDoc: savedDoc,
+        });
+      })
+      .catch((e) => console.log(e));
   });
 });
 
 router.post("/pairup/category", (req, res) => {
   const seekerNumber = req.body.seekerNumber;
   const categories = req.body.categories;
-
+  const seekerNick = faker.internet.userName();
   ListenerSchema.find({
     "status.online": true,
     "status.currentEngagedSessionId": "None",
@@ -62,33 +55,65 @@ router.post("/pairup/category", (req, res) => {
   }).then((listenerDocs) => {
     listenerDocs = _.shuffle(listenerDocs);
     const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];
+    const presentedListeners = [];
+    selection.forEach((selectedListener) => {
+      presentedListeners.push(selectedListener._id);
+    });
 
+    const pairing = new PairingSchema({
+      $push: {
+        presentedListeners: { $each: presentedListeners },
+        seekerNumber: seekerNumber,
+        seekerNick: seekerNick,
+        $push: { categories: { $each: categories } },
+      },
+    });
+
+    pairing
+      .save()
+      .then((savedDoc) => {
+        res.status(200).json({
+          presentedListeners: presentedListeners,
+          sessionDoc: savedDoc,
+        });
+      })
+      .catch((e) => console.log(e));
+  });
+});
+
+router.put("/accept/session/:sessionid", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const sessionId = req.params.sessionid;
+  const listenerNick = faker.internet.userName();
+
+  PairingSchema.findOne({ _id: sessionId }).then((sessionDoc) => {
     jwt.sign(
-      { id: selection._id },
+      { id: listenerId },
       process.env.JWT_SECRET,
       (err, listenerToken) => {
         if (err) throw err;
         jwt.sign(
-          { number: seekerNumber },
+          { number: sessionDoc.seekerNumber },
           process.env.JWT_SECRET,
           (err, seekerToken) => {
             if (err) throw err;
 
-            const pairing = new PairingSchema({
-              lisnerId: selection._id,
-              seekerNumber: seekerNumber,
-            });
-
-            pairing
-              .save()
-              .then((savedDoc) => {
-                res.status(200).json({
-                  listenerToken: listenerToken,
-                  seekerToken: seekerToken,
-                  savedDoc,
-                });
-              })
-              .catch((e) => console.log(e));
+            PairingSchema.findOneAndUpdate(
+              { _id: sessionDoc._id },
+              {
+                acceptedByListener: true,
+                $set: { listenerId: listenerId, listenerNick: listenerNick },
+              },
+              { new: true }
+            ).then(sessionDoc =>
+              res
+                .status(200)
+                .json({
+                  tokens: { listener: listenerToken, seeker: seekerToken },
+                  nicks: { seeker: seekerNick, listener: listenerNick },
+                  sessionDoc
+                })
+            );
           }
         );
       }

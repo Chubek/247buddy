@@ -15,7 +15,7 @@ const BlockedNumbersSchema = Schema({
   reportedMessage: String,
 });
 
-AdminSchema.plugin(mongooseFieldEncryption, {
+BlockedNumbersSchema.plugin(mongooseFieldEncryption, {
   fields: ["blockedNumber"],
   secret: process.env.MONGOOSE_ENCRYPT_SECRET,
 });

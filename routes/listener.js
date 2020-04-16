@@ -398,3 +398,14 @@ router.put("/set/categories", ListenerAuth, (req, res) => {
     })
     .catch((e) => console.log(e));
 });
+
+router.put("/go/offline", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    { "status.online": false }
+  )
+    .then(() => res.status(200).json({ userOffline: true }))
+    .catch((e) => console.log(e));
+});
