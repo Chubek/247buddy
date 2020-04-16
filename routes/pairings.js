@@ -18,9 +18,8 @@ router.post("/pairup/randomly", (req, res) => {
     categories: { $in: ["General"] },
   }).then((listenerDocs) => {
     listenerDocs = _.shuffle(listenerDocs);
-    const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];
     const presentedListeners = [];
-    selection.forEach((selectedListener) => {
+    listenerDocs.forEach((selectedListener) => {
       presentedListeners.push(selectedListener._id);
     });
 
@@ -54,9 +53,8 @@ router.post("/pairup/category", (req, res) => {
     categories: { $in: categories },
   }).then((listenerDocs) => {
     listenerDocs = _.shuffle(listenerDocs);
-    const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];
     const presentedListeners = [];
-    selection.forEach((selectedListener) => {
+    listenerDocs.forEach((selectedListener) => {
       presentedListeners.push(selectedListener._id);
     });
 
@@ -105,14 +103,12 @@ router.put("/accept/session/:sessionid", ListenerAuth, (req, res) => {
                 $set: { listenerId: listenerId, listenerNick: listenerNick },
               },
               { new: true }
-            ).then(sessionDoc =>
-              res
-                .status(200)
-                .json({
-                  tokens: { listener: listenerToken, seeker: seekerToken },
-                  nicks: { seeker: seekerNick, listener: listenerNick },
-                  sessionDoc
-                })
+            ).then((sessionDoc) =>
+              res.status(200).json({
+                tokens: { listener: listenerToken, seeker: seekerToken },
+                nicks: { seeker: seekerNick, listener: listenerNick },
+                sessionDoc,
+              })
             );
           }
         );
