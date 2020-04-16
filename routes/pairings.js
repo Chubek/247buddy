@@ -13,6 +13,52 @@ router.post("/pairup/randomly", (req, res) => {
   ListenerSchema.find({
     "status.online": true,
     "status.currentEngagedSessionId": "None",
+    categories: { $in: ["General"] },
+  }).then((listenerDocs) => {
+    listenerDocs = _.shuffle(listenerDocs);
+    const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];
+
+    jwt.sign(
+      { id: selection._id },
+      process.env.JWT_SECRET,
+      (err, listenerToken) => {
+        if (err) throw err;
+        jwt.sign(
+          { number: seekerNumber },
+          process.env.JWT_SECRET,
+          (err, seekerToken) => {
+            if (err) throw err;
+
+            const pairing = new PairingSchema({
+              lisnerId: selection._id,
+              seekerNumber: seekerNumber,
+            });
+
+            pairing
+              .save()
+              .then((savedDoc) => {
+                res.status(200).json({
+                  listenerToken: listenerToken,
+                  seekerToken: seekerToken,
+                  savedDoc,
+                });
+              })
+              .catch((e) => console.log(e));
+          }
+        );
+      }
+    );
+  });
+});
+
+router.post("/pairup/category", (req, res) => {
+  const seekerNumber = req.body.seekerNumber;
+  const categories = req.body.categories;
+
+  ListenerSchema.find({
+    "status.online": true,
+    "status.currentEngagedSessionId": "None",
+    categories: { $in: categories },
   }).then((listenerDocs) => {
     listenerDocs = _.shuffle(listenerDocs);
     const selection = listenerDocs[_.random(0, listenerDocs.length - 1)];

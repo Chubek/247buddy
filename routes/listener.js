@@ -28,6 +28,10 @@ router.get("/get/single/:listenerid", (req, res) => {
   const listenerId = req.params.listenerid;
   ListenerSchema.findOne({ _id: listenerId })
     .then((listenerDoc) => {
+      if (!listenerDoc) {
+        res.status(200).json({ noListenerDoc: true });
+        return false;
+      }
       res.status(200).json({
         listenerDoc,
       });
@@ -35,10 +39,24 @@ router.get("/get/single/:listenerid", (req, res) => {
     .catch((e) => console.log(e));
 });
 
+router.get("/get/username", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+
+  ListenerSchema.findOne({ _id: listenerId })
+    .then((listenerDoc) => {
+      if (!listenerDoc) {
+        res.status(200).json({ noListenerDoc: true });
+        return false;
+      }
+      res.status(200).json({ userName: listenerDoc.userName });
+    })
+    .catch((e) => console.log(e));
+});
+
 //POSTs
 
 router.post("/register", (req, res) => {
-  const { userName, email, number, password } = req.body;
+  const { userName, email, number, password, categories } = req.body;
   if (!userName) {
     res.status(401).json({ notSent: "userName" });
     return false;
@@ -99,6 +117,7 @@ router.post("/register", (req, res) => {
       email: email,
       password: hash,
       "cell.number": number,
+      $addToSet: { categories: { $each: categories } },
       "activationStatus.activationCode":
         _.random(100, 999) + _.random(1000, 9999),
     });
@@ -366,4 +385,16 @@ router.put("/change/password", ListenerAuth, (req, res) => {
   });
 });
 
+router.put("/set/categories", ListenerAuth, (req, res) => {
+  const listenerId = req.listener.id;
+  const categories = req.body.categories;
 
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    { $addToSet: { categories: { $each: categories } } }
+  )
+    .then(() => {
+      res.status(200).json({ categoriesSet: true });
+    })
+    .catch((e) => console.log(e));
+});

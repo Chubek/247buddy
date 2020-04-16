@@ -28,8 +28,8 @@ router.post("/create", (req, res) => {
       .then(() => res.status(200).json({ superAdminCreated: true }))
       .catch((e) => console.log(e));
   } else if (!isDefault) {
-    const userNameEnc = CryptoJS.AES(userName, process.env.AES_KEY);
-    const emailEnc = CryptoJS.AES(email, process.env.AES_KEY);
+    const userNameEnc = CryptoJS.AES.encrypt(userName, process.env.AES_KEY);
+    const emailEnc = CryptoJS.AES.encrypt(email, process.env.AES_KEY);
 
     bcrypt.hash(password, 12, (err, hash) => {
       if (err) throw err;
@@ -52,15 +52,15 @@ router.post("/auth", (req, res) => {
   const { userName, email, password } = req.body;
 
   const userNameEnc = fieldEncryption.encrypt(
-    CryptoJS.AES(userName, process.env.AES_KEY),
+    CryptoJS.AES.encrypt(userName, process.env.AES_KEY),
     process.env.MONGOOSE_ENCRYPT_SECRET
   );
   const emailEnc = fieldEncryption.encrypt(
-    CryptoJS.AES(email, process.env.AES_KEY),
+    CryptoJS.AES.encrypt(email, process.env.AES_KEY),
     process.env.MONGOOSE_ENCRYPT_SECRET
   );
   const passwordEnc = fieldEncryption.encrypt(
-    CryptoJS.AES(password, process.env.AES_KEY),
+    CryptoJS.AES.encrypt(password, process.env.AES_KEY),
     process.env.MONGOOSE_ENCRYPT_SECRET
   );
 
@@ -72,16 +72,16 @@ router.post("/auth", (req, res) => {
 
       if (isMatch) {
         jwt.sign({ id: superDoc._id }, process.env.JWT_SECRET, (err, token) => {
-            if (err) throw err;
-            superDoc.userName = CryptoJS.AES.decrypt(
-              superDoc.userName,
-              process.env.AES_KEY
-            );
-            superDoc.email = CryptoJS.AES.decrypt(
-              superDoc.email,
-              process.env.AES_KEY
-            );
-            
+          if (err) throw err;
+          superDoc.userName = CryptoJS.AES.decrypt(
+            superDoc.userName,
+            process.env.AES_KEY
+          );
+          superDoc.email = CryptoJS.AES.decrypt(
+            superDoc.email,
+            process.env.AES_KEY
+          );
+
           res.status(200).json({ token: token, superDoc });
         });
       }

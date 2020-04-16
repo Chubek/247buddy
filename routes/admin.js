@@ -34,6 +34,11 @@ router.get("/get/all", SuperAdminAuth, (req, res) => {
 router.get("/get/single/:adminid", SuperAdminAuth, (req, res) => {
   AdminSchema.findOne({ _id: req.params.adminid })
     .then((adminDoc) => {
+      if (!adminDoc) {
+        res.status(404).json({ noAdmin: true });
+        return false;
+      }
+
       adminDoc.userName = CryptoJS.AES.decrypt(
         adminDoc.userName,
         process.env.AES_KEY

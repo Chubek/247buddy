@@ -28,6 +28,12 @@ router.post("/block", AdminAuth, (req, res) => {
 
 router.get("/get/single/:blockid", AdminAuth, (req, res) => {
   BlockedNumbersSchema.findOne({ _id: req.params.blockid })
-    .then((blockDoc) => res.status(200).json({ blockDoc }))
+    .then((blockDoc) => {
+      if (!blockDoc) {
+        res.status(404).json({ noBlockDoc: true });
+        return false;
+      }
+      res.status(200).json({ blockDoc });
+    })
     .catch((e) => console.log(e));
 });

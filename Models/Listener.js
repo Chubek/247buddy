@@ -43,15 +43,14 @@ const ListenrSchema = new Schema({
       default: false,
     },
     approvalChangeDate: Date,
-    
   },
   avatar: {
     src: String,
     sha256: String,
   },
   categories: {
-    minLength: 3,
-    categoriesArray: [],
+    type: [String],
+    default: ["General"],
   },
   infractionsReported: [
     {
