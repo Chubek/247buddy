@@ -25,8 +25,8 @@ const AdminSchema = Schema({
     type: String,
     required: true,
   },
-  loginDates: { type: [Date], default: Date.now },
-  numbersBlockedBy: { type: [String] },
+  loginDates: [Date],
+  numbersBlockedId: [String],
   bannedListenersId: [String],
   bannedStatus: {
     banned: Boolean,

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const PairingSchema = new Schema({
   listenerId: String,
-  seekerNick: String,
+  seekerNumber: String,
   category: String,
   seekerReason: String,
   sessionDate: {
@@ -14,8 +14,9 @@ const PairingSchema = new Schema({
   endHour: String,
   report: {
     reportedBy: String,
+    reportedEntity: String,
     reportedMessage: String,
-    reportResult: String,
+
   },
 });
 

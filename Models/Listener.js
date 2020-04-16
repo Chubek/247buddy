@@ -42,8 +42,8 @@ const ListenrSchema = new Schema({
       type: Boolean,
       default: false,
     },
-    disApprovalDate: Date,
-    approvalDate: Date,
+    approvalChangeDate: Date,
+    
   },
   avatar: {
     src: String,
@@ -57,22 +57,16 @@ const ListenrSchema = new Schema({
     {
       sessionId: String,
       reportedNumber: String,
-      reportmessage: String,
-      reportDate: {
-        type: Date,
-        default: Date.now,
-      },
+      reportedMessage: String,
+      reportDate: Date,
     },
   ],
   reportedBySeekers: [
     {
       sessionId: String,
       reporterNumber: String,
-      reportmessage: String,
-      reportDate: {
-        type: Date,
-        default: Date.now,
-      },
+      reportedMessage: String,
+      reportDate: Date,
     },
   ],
   bannedStatus: {

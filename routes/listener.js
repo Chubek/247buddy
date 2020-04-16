@@ -366,20 +366,4 @@ router.put("/change/password", ListenerAuth, (req, res) => {
   });
 });
 
-router.put("/session/disconnect", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
 
-  ListenerSchema.findOne({ _id: listenerId })
-    .then((listenerDoc) => {
-      ListenerSchema.findOneAndUpdate(
-        { _id: listenerId },
-        {
-          "status.currentEngagedSessionId": "None",
-          $addToSet: { sessionIds: listenerDoc.status.currentEngagedSessionId },
-        }
-      )
-        .then(() => res.status(200).json({ disconnected: true }))
-        .catch((e) => console.log(e));
-    })
-    .catch((e) => console.log(e));
-});

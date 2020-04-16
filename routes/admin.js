@@ -59,7 +59,14 @@ router.post("/auth", (req, res) => {
       if (isMatch) {
         jwt.sign({ id: adminDoc._id }, process.env.JWT_SECRET, (err, token) => {
           if (err) throw err;
-          res.status(200).json({ token: token, adminDoc });
+          AdminSchema.findOneAndUpdate(
+            {
+              _id: adminDoc._id,
+            },
+            { $push: { loginDates: new Date() } }
+          )
+            .then(() => res.status(200).json({ token: token, adminDoc }))
+            .catch((e) => console.log(e));
         });
       } else {
         res.status(403).json({ passwordCorrect: false });
@@ -119,4 +126,48 @@ router.put("/change/password", AdminAuth, (req, res) => {
       }
     });
   });
+});
+
+router.put("/set/approval/:listenerid", AdminAuth, (req, res) => {
+  const listenerId = req.params.listenerid;
+  const approval = req.body.approval === "true" ? true : false;
+
+  ListenerSchema.findOneAndUpdate(
+    { _id: listenerId },
+    {
+      "approvalStatus.approved": approval,
+      $set: { "approvalStatus.approvalChangeDate": new Date() },
+    }
+  )
+    .then(() => res.status(200).json({ isApproved: approval }))
+    .catch((e) => console.log(e));
+});
+
+router.put("/ban/:listenerid", AdminAuth, (req, res) => {
+  const listenerId = req.params.listenerid;
+  const adminId = req.admin.id;
+  const endDate = req.body.endDate;
+
+  ListenerSchema.findByIdAndUpdate(
+    { _id: listenerId },
+    {
+      $push: {
+        "bannedStatus.formerBans": {
+          banDate: "bannedStatus.banDate",
+          expireDate: "bannedStatus.expireDate",
+        },
+      },
+      $set: {
+        "bannedStatus.banDate": new Date(),
+        "bannedStatus.expireDate": endDate,
+      },
+    }
+  )
+    .then(() => {
+      AdminSchema.findOneAndUpdate(
+        { _id: adminId },
+        { $push: { bannedListenersId: listenerId } }
+      ).then(() => res.status(200).json({ listenerBanned: true }));
+    })
+    .catch((e) => console.log(e));
 });
