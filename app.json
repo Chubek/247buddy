@@ -1,0 +1,17 @@
+{
+  "name": "BuddyClient",
+  "displayName": "BuddyClient",
+  "expo": {
+    "name": "BuddyClient",
+    "slug": "BuddyClient",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
