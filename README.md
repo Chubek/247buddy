@@ -4,7 +4,7 @@
 
 2. Download and install Android Platform Tools (Genymotion has its own SDK).
 
-3. Add the Platform Tools folder to your PATH.
+3. Add the Platform Tools folder to your PATH. Also install Android SDK and add the root of it to the ANDROID_HOME. Also install JDK and add its root to JAVA_HOME.
 
 4. After starting a Virtual Device, type "adb devices" in your terminal app and if the VD is listed, you're good to go.
 
