@@ -2,11 +2,12 @@
 
 import { StyleSheet, View, Text } from "react-native";
 import PropTypes from "prop-types";
+import { useNavigation } from '@react-navigation/native';
 
 export default function NAMEComponent(props) {
 
 return (
-
+const navigation = useNavigation();
 <Text style={styles.text}> This is the NAME component. </Text>
 
 );

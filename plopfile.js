@@ -159,7 +159,7 @@ module.exports = function (plop) {
     ],
   });
 
-  plop.setGenerator("append-stack", {
+  plop.setGenerator("append-stack-module", {
     description: "Append your module to stack navigation file.",
     prompts: [
       {
@@ -209,7 +209,7 @@ module.exports = function (plop) {
         data.splice(
           importsLine + 2,
           0,
-          `import ${vars.moduleName}View from "../src/modules/${vars.moduleName
+          `import ${vars.moduleName}View from "../modules/${vars.moduleName
             .split(/(?=[A-Z])/)
             .join("-")
             .toLowerCase()}/${vars.moduleName}View";`
@@ -235,7 +235,79 @@ module.exports = function (plop) {
       },
     ],
   });
+  plop.setGenerator("append-stack-component", {
+    description: "Append your module to stack navigation file.",
+    prompts: [
+      {
+        type: "input",
+        name: "componentName",
+        validate: (v) => {
+          const pattern = /[A-Z][a-zA-Z]+/;
+          if (pattern.test(v)) {
+            return true;
+          }
+          return "First letter must be capitalized. Can't contain numbers or special characters.";
+        },
+        message:
+          "Name of your module. Just like you entered it. It must be capitalized, and have no numbers or special characters",
+      },
+      {
+        type: "input",
+        name: "screenName",
+        message: "Name for your screen",
+      },
+      {
+        type: "input",
+        name: "screenTitle",
+        message: "Title for your screen",
+      },
+    ],
+    actions: [
+      (vars) => {
+        process.chdir(plop.getPlopfilePath());
+        const fs = require("fs");
 
+        let data = fs
+          .readFileSync("./src/navigator/index.js")
+          .toString()
+          .split("\n");
+        let importsLine = null;
+        let screenLine = null;
+
+        data.forEach((datum, index) => {
+          if (datum.match(/\/\/ComponentImport/)) {
+            importsLine = index;
+          } else if (datum.match(/\/\/StackScreens/)) {
+            screenLine = index;
+          }
+        });
+
+        data.splice(
+          importsLine + 2,
+          0,
+          `import ${vars.componentName}Component from "../components/${vars.componentName}.js";`
+        );
+        data.splice(
+          screenLine + 2,
+          0,
+          `<Stack.Screen name="${vars.screenName}" component={${vars.componentName}Component} options={{title: '${vars.screenTitle}'}} />` +
+            ","
+        );
+
+        const text = data.join("\n");
+
+        fs.writeFile("./src/navigator/index.js", text, function (err) {
+          if (err) return console.error(err);
+          return console.log(
+            plop.renderString(
+              "Component {{componentName}}Component added to /src/navigator/index.js as {{screenName}} and the title {{screenTitle}}.",
+              vars
+            )
+          );
+        });
+      },
+    ],
+  });
   plop.setGenerator("append-reducer", {
     description: "Append your module to reducer file.",
     prompts: [

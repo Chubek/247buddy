@@ -1,0 +1,8 @@
+{
+    "appName": "247 Buddy",
+    "landingPage": {
+        "logIn": "Log In as Listener",
+        "register": "Register as Listener",
+        "connect": "Connect to a Listener"
+    }
+}
