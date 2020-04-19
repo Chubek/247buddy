@@ -6,9 +6,41 @@ import * as en from "../localization/en.json";
 
 export default function LandingPageScreen({ navigation }) {
   return (
-    <View>
-      <Text>Hello </Text>
-      <Image source={require("../../assets/img/hero.png")} />
+    <View style={styles.container}>
+      <Text style={styles.titleText}> {en.appName} </Text>
+      <Image
+        style={styles.hero}
+        source={require("../../assets/img/hero.png")}
+      />
+      <Container style={styles.buttonContainer}>
+        <Button
+          style={styles.loginButton}
+          iconLeft
+          light
+          onPress={() => navigation.navigate("ListenerLogin")}
+        >
+          <Icon type="FontAwesome" name="sign-in" />
+          <Text>{en.landingPage.logIn}</Text>
+        </Button>
+        <Button
+          style={styles.registerButton}
+          iconLeft
+          light
+          onPress={() => navigation.navigate("ListenerRegister")}
+        >
+          <Icon type="FontAwesome" name="music" />
+          <Text>{en.landingPage.register}</Text>
+        </Button>
+        <Button
+          style={styles.pairButton}
+          iconLeft
+          light
+          onPress={() => navigation.navigate("PairSession")}
+        >
+          <Icon type="FontAwesome" name="heartbeat" />
+          <Text>{en.landingPage.connect}</Text>
+        </Button>
+      </Container>
     </View>
   );
 }
