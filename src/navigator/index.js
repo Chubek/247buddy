@@ -4,13 +4,14 @@ import { NavigationContainer } from "@react-navigation/native";
 
 //ComponentImport
 
-import LandingPageScreen from "../components/LandingPage.js";
+import LandingPageScreen from "../screens/LandingPage.js";
 const Stack = createStackNavigator();
 
 export default function NavigationStack() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="WelcomeScreen">
+        {/* ScreenNames */}
         <Stack.Screen
           name="WelcomeScreen"
           component={LandingPageScreen}

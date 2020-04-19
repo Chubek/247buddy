@@ -4,7 +4,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import "react-native-gesture-handler";
 import { store, persistor } from "./src/redux/store";
 import StackNavigator from "./src/navigator";
-import LandingPageScreen from "./src/components/LandingPage.js";
+import LandingPageScreen from "./src/screens/LandingPage.js";
 const Stack = createStackNavigator();
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
