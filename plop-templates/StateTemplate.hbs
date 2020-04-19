@@ -1,7 +1,7 @@
 /* Authored by Chubak Bidpaa: chubakbidpaa@gmail.com - 2020 - Corona Times */
 
-import CONSTANTS from "./NAMEConstants";
-import {AsyncStorage} from 'react-native';
+import * as CONSTANTS from "./AuthConstants";
+import AsyncStorage from "@react-native-community/async-storage";
 import axios from "axios";
 
 //AsyncStorage
@@ -69,11 +69,11 @@ payload: payload,
 //reducer
 const initialState = {
 stateOne: "One",
-stateTwo: 2,
+stateTwo: "2",
 stateThree: false,
 };
 
-export default function NAMEStateReducer(state = initialState, action = {}) {
+export default function AuthStateReducer(state = initialState, action = {}) {
 switch (action.type) {
 case CONSTANTS.ACTION_TWO:
 return {
