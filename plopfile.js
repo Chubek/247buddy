@@ -67,7 +67,7 @@ module.exports = function (plop) {
     ],
   });
 
-  plop.setGenerator("create-component", {
+  plop.setGenerator("create-component-stateless", {
     description: "Creates component.",
     prompts: [
       {
@@ -87,18 +87,52 @@ module.exports = function (plop) {
     actions: [
       {
         type: "add",
-        path: "./src/components/{{name}}.js",
+        path: "./src/components/stateless/{{name}}.js",
         templateFile: "plop-templates/StatelessComponentTemplate.hbs",
       },
       {
         type: "modify",
-        path: "./src/components/{{name}}.js",
+        path: "./src/components/stateless/{{name}}.js",
         transform(fileContents, data) {
           return fileContents.replace(/NAME/g, data.name);
         },
       },
     ],
   });
+
+  plop.setGenerator("create-component-stateful", {
+    description: "Creates component.",
+    prompts: [
+      {
+        type: "input",
+        name: "name",
+        validate: (v) => {
+          const pattern = /[A-Z][a-zA-Z]+/;
+          if (pattern.test(v)) {
+            return true;
+          }
+          return "First letter must be capitalized. Can't contain numbers or special characters.";
+        },
+        message:
+          "Component name. Must be capitalized and can't contain numbers.",
+      },
+    ],
+    actions: [
+      {
+        type: "add",
+        path: "./src/components/stateful/{{name}}.js",
+        templateFile: "plop-templates/StatefulComponentTemplate.hbs",
+      },
+      {
+        type: "modify",
+        path: "./src/components/stateful/{{name}}.js",
+        transform(fileContents, data) {
+          return fileContents.replace(/NAME/g, data.name);
+        },
+      },
+    ],
+  });
+
   plop.setGenerator("create-screen", {
     description: "Creates screen.",
     prompts: [
