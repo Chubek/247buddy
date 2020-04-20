@@ -349,7 +349,7 @@ module.exports = function (plop) {
         data.splice(
           importsLine + 2,
           0,
-          `import ${vars.reducerAlias} from "../src/modules/${vars.moduleName
+          `import ${vars.reducerAlias} from "../modules/${vars.moduleName
             .split(/(?=[A-Z])/)
             .join("-")
             .toLowerCase()}/${vars.moduleName}State";`

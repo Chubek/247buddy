@@ -170,27 +170,7 @@ export function authListener(authInfo) {
   });
 }
 
-export function verifyEmail(activationCode) {
-  if (!activationCode) {
-    helpers.showErrorMessage("You haven't entered an activation code.");
-    return false;
-  }
 
-  return new Promise((resolve, reject) => {
-    axios
-      .put(`${globalStr.serverUrl}/listener/verify/email`, activationCode, {
-        headers: { "x-auth-listener": helpers.getListenerToken() },
-      })
-      .then((res) => {
-        const { emailVerified } = res.data;
-        resolve(emailVerified);
-      })
-      .catch((e) => {
-        reject(e);
-        helpers.showErrorMessage(e);
-      });
-  });
-}
 
 export function setAvatar(imgFile) {
   if (!imgFile) {
