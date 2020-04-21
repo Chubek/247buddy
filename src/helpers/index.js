@@ -77,3 +77,7 @@ export const getOtpFromSms = () => {
     });
   });
 };
+
+export const getFooter = () => {
+  return `${new Date().toISOString().substr(0, 4)} - All Rights Reserved`;
+}
