@@ -18,7 +18,7 @@ const ListenrSchema = new Schema({
     unique: true,
   },
   emailVerificationCode: Number,
-  emailedVerified: {
+  emailVerified: {
     type: Boolean,
     default: false,
   },

@@ -1,21 +1,21 @@
-require("dotenv").config({ path: "../.env" });
-const router = require("express").Router();
-const fieldEncryption = require("mongoose-field-encryption");
+require("./node_modules/dotenv").config({ path: "../.env" });
+const router = require("./node_modules/express").Router();
+const fieldEncryption = require("./node_modules/mongoose-field-encryption");
 const ListenerSchema = require("../Models/Listener");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("./node_modules/bcrypt");
+const jwt = require("./node_modules/jsonwebtoken");
 const sendMail = require("../Services/Mailer");
-const _ = require("lodash");
+const _ = require("./node_modules/lodash");
 const ListenerAuth = require("../Middleware/ListenerAuth");
 const AdminSchema = require("../Models/Admin");
 const fs = require("fs");
 const randomstring = require("randomstring");
-const sha256File = require("sha256-file");
-const imagemin = require("imagemin");
-const imageminJpegtran = require("imagemin-jpegtran");
-const imageminPngquant = require("imagemin-pngquant");
+const sha256File = require("./node_modules/sha256-file");
+const imagemin = require("./node_modules/imagemin");
+const imageminJpegtran = require("./node_modules/imagemin-jpegtran");
+const imageminPngquant = require("./node_modules/imagemin-pngquant");
 const SendOTP = require("../Services/SendOTP");
-const asyncHandler = require("express-async-handler");
+const asyncHandler = require("./node_modules/express-async-handler");
 //GETs
 router.get("/get/all", (req, res) => {
   ListenerSchema.find({})
@@ -131,31 +131,27 @@ router.post("/register", (req, res) => {
 
   Listener.save()
     .then((savedDoc) => {
-      jwt.sign({ id: savedDoc._id }, process.env.JWT_SECRET, (err, token) => {
-        if (err) throw err;
-        sendMail(
-          email,
-          "Your Registeration at 247Buddy Requires activation",
-          `Your activation code is: ${emailVerificationCode}. \n Please enter the above code into the specified field in the app.`
-        )
-          .then(() => {
-            SendOTP(password, number)
-              .then(() => {
-                res.status(200).json({
-                  token: token,
-                  listenerDoc: savedDoc,
-                });
-              })
-              .catch((e) => {
-                console.error(e);
-                res.sendStatus(500);
+      sendMail(
+        email,
+        "Your Registeration at 247Buddy Requires activation",
+        `Your activation code is: ${emailVerificationCode}. \n Please enter the above code into the specified field in the app.`
+      )
+        .then(() => {
+          SendOTP(password, number)
+            .then(() => {
+              res.status(200).json({
+                listenerDoc: savedDoc,
               });
-          })
-          .catch((e) => {
-            console.error(e);
-            res.sendStatus(500);
-          });
-      });
+            })
+            .catch((e) => {
+              console.error(e);
+              res.sendStatus(500);
+            });
+        })
+        .catch((e) => {
+          console.error(e);
+          res.sendStatus(500);
+        });
     })
     .catch((e) => {
       console.error(e);
@@ -231,6 +227,25 @@ router.post("/auth", (req, res) => {
 });
 
 //PUTs
+
+router.put("/request/otp/:listnerid", (req, res) => {
+  const otp = _.random(100, 999) + _.random(1000, 9999);
+  ListenerSchema.findOneAndUpdate(
+    { _id: req.params.listnerid },
+    {
+      "otp.password": otp,
+      "otp.creationHour": new Date()
+        .toISOString()
+        .substr(11, 5)
+        .replace(":", ""),
+    }
+  )
+    .then(() => res.status(200).json({ otpUpdated: true, newOtp: otp }))
+    .catch((e) => {
+      console.error(e);
+      res.sendStatus(500);
+    });
+});
 
 router.put("/verify/email", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
@@ -372,31 +387,6 @@ router.put("/change/email", ListenerAuth, (req, res) => {
   });
 });
 
-router.put("/change/password", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
-  const { oldPassword, newPassword } = req.body;
-
-  ListenerSchema.findOne({ _id: listenerId }).then((listenerDoc) => {
-    bcrypt.compare(oldPassword, listenerDoc.password, (err, isMatch) => {
-      if (err) throw err;
-      if (isMatch) {
-        bcrypt.hash(newPassword, 12, (err, hash) => {
-          if (err) throw err;
-          ListenerSchema.findOneAndUpdate(
-            { _id: listenerId },
-            { password: hash }
-          )
-            .then(() => res.status(200).json({ passwordChanged: true }))
-            .catch((e) => {
-              console.error(e);
-              res.sendStatus(500);
-            });
-        });
-      }
-    });
-  });
-});
-
 router.put("/set/categories", ListenerAuth, (req, res) => {
   const listenerId = req.listener.id;
   const categories = req.body.categories;
@@ -408,20 +398,6 @@ router.put("/set/categories", ListenerAuth, (req, res) => {
     .then(() => {
       res.status(200).json({ categoriesSet: true });
     })
-    .catch((e) => {
-      console.error(e);
-      res.sendStatus(500);
-    });
-});
-
-router.put("/go/offline", ListenerAuth, (req, res) => {
-  const listenerId = req.listener.id;
-
-  ListenerSchema.findOneAndUpdate(
-    { _id: listenerId },
-    { "status.online": false }
-  )
-    .then(() => res.status(200).json({ userOffline: true }))
     .catch((e) => {
       console.error(e);
       res.sendStatus(500);

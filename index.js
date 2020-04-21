@@ -35,6 +35,12 @@ mongoose.set("useFindAndModify", false);
 
 app.use("/avatars", express.static(path.join(__dirname, "public/img/avatars")));
 
+app.use("/listener", require("./Routes/listener"));
+app.use("admin", require("./Routes/admin"));
+app.use("blocked", require("./Routes/blockedNumbers"));
+app.use("superAdmin", require("./Routes/superAdmin"));
+app.use("session", require("./Routes/pairings"));
+
 /*app.get("/", function(req, res) {
   res.sendFile("index.html", { root: path.join(__dirname, "dist") });
 });*/

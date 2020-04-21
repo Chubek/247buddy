@@ -12,7 +12,7 @@ function sendMail(to, subject, text) {
     });
 
     const mailOptions = {
-      from: "youremail@gmail.com",
+      from: "chubakbidpaa@gmail.com",
       to: to,
       subject: subject,
       text: text,
