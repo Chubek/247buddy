@@ -1,13 +1,23 @@
 /* Authored by Chubak Bidpaa: chubakbidpaa@gmail.com - 2020 - Corona Times */
 import * as React from "react";
+import { StyleSheet, ImageBackground } from "react-native";
 import {
-  StyleSheet,
-  View,
+  Container,
+  Header,
+  Title,
+  Content,
+  Footer,
+  FooterTab,
+  Button,
+  Left,
+  Right,
+  Body,
+  Icon,
   Text,
-  TextInput,
-  ImageBackground,
-} from "react-native";
-import { Button, Icon } from "native-base";
+  Input,
+  Label,
+  Form,
+} from "native-base";
 import * as en from "../../localization/en.json";
 import * as helpers from "../../helpers";
 
@@ -48,49 +58,49 @@ export default class LoginPageComponent extends React.Component {
   render() {
     const image = require("../../../assets/img/Flat-Mountains.png");
     return (
-      <View style={styles.mainContainer}>
+      <Container style={styles.mainContainer}>
         <ImageBackground source={image} style={styles.bgImage}>
-          <Text style={styles.headerText}>
-            {en.listenerLoginPage.loginBlurb}
-          </Text>
-          <View style={styles.loginStringContainer}>
-            <Text style={styles.stringText}>
-              {en.listenerLoginPage.loginString}
-            </Text>
-            <TextInput
-              style={styles.stringInput}
-              autoCorrect={false}
-              placeholder={en.listenerLoginPage.loginString}
-              textContentType={"none"}
-              onChangeText={(v) => this.setState({ loginString: v })}
-            />
-          </View>
-          <View style={styles.passwordContainer}>
-            <Text style={styles.passwordText}>
-              {en.listenerLoginPage.password}
-            </Text>
-            <TextInput
-              style={styles.passwordInput}
-              autoCorrect={false}
-              textContentType={"password"}
-              placeholder={en.listenerLoginPage.password}
-              value={this.state.smsOtp}
-              onChangeText={(v) => this.setState({ password: v })}
-            />
-          </View>
-
-          <Button
-            style={styles.submitButton}
-            iconLeft
-            primary
-            full
-            onPress={() => this.authAndRedirect()}
-          >
-            <Icon style={styles.buttonIcon} type="FontAwesome" name="sign-in" />
-            <Text style={styles.buttonText}>{en.landingPage.logIn}</Text>
-          </Button>
+          <Header>
+            <Left>
+              <Icon name="arrow-right" />
+              <Text>{en.listenerLoginPage.loginBlurb}</Text>
+            </Left>
+          </Header>
+          <Content>
+            <Body>
+              <Form>
+                <Item fixedLabel>
+                  <Label>{en.listenerLoginPage.loginString}</Label>
+                  <Input />
+                </Item>
+                <Item fixedLabel>
+                  <Label>{en.listenerLoginPage.loginString}</Label>
+                  <Item>
+                    <Icon active name="sign-in" />
+                    <Input
+                      onChange={(v) => this.setState({ loginString: v })}
+                    />
+                  </Item>
+                </Item>
+                <Item fixedLabel>
+                  <Label>{en.listenerLoginPage.password}</Label>
+                  <Item>
+                    <Icon active name="ticket" />
+                    <Input
+                      value={this.state.smsOtp}
+                      onChange={(v) => this.setState({ password: v })}
+                    />
+                  </Item>
+                </Item>
+                <Button onPress={() => this.onAuthListener} iconLeft>
+                  <Icon name="key" />
+                  <Text>{en.landingPage.logIn}</Text>
+                </Button>
+              </Form>
+            </Body>
+          </Content>
         </ImageBackground>
-      </View>
+      </Container>
     );
   }
 }
