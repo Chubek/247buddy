@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import globalStr from "../../global";
 import { showMessage, hideMessage } from "react-native-flash-message";
+import SmsListener from "react-native-android-sms-listener";
 
 export const showErrorMessage = async (errorMessage) => {
   showMessage({
@@ -61,4 +62,14 @@ export const getEditDates = (editCaptures) => {
 
 export const getDate = () => {
   return new Date().toISOString().substr(0, 10);
+};
+
+export const getOtpFromSms = () => {
+  SmsListener.addListener((message) => {
+    const verificationCodeRegex = /([\d]{4})/;
+
+    if (verificationCodeRegex.test(message.body)) {
+      return message.body.match(verificationCodeRegex);
+    }
+  });
 };

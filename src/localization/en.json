@@ -4,5 +4,11 @@
         "logIn": "Log In as Listener",
         "register": "Register as Listener",
         "connect": "Connect to a Listener"
+    },
+    "listenerLoginPage": {
+        "loginString": "Username, Email or Phone Number",
+        "password": "Password",
+        "passwordToolTip": "The One-TIme Passsword which has been texted to you.",
+        "loginBlurb": "Use this form to login as a listener."
     }
 }
