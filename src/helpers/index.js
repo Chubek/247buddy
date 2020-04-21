@@ -65,11 +65,15 @@ export const getDate = () => {
 };
 
 export const getOtpFromSms = () => {
-  SmsListener.addListener((message) => {
-    const verificationCodeRegex = /([\d]{4})/;
+  return new Promise((resolve, reject) => {
+    SmsListener.addListener((message) => {
+      const verificationCodeRegex = /([\d]{4})/;
 
-    if (verificationCodeRegex.test(message.body)) {
-      return message.body.match(verificationCodeRegex);
-    }
+      if (verificationCodeRegex.test(message.body)) {
+        resolve(message.body.match(verificationCodeRegex));
+      } else {
+        reject("");
+      }
+    });
   });
 };

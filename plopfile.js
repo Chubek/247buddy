@@ -153,12 +153,12 @@ module.exports = function (plop) {
     actions: [
       {
         type: "add",
-        path: "./src/screens/{{lowerCase name}}.js",
-        templateFile: "plop-templates/StatelessComponentTemplate.hbs",
+        path: "./src/screens/{{name}}.js",
+        templateFile: "plop-templates/ScreenTemplate.hbs",
       },
       {
         type: "modify",
-        path: "./src/screens/{{lowerCase name}}.js",
+        path: "./src/screens/{{name}}.js",
         transform(fileContents, data) {
           return fileContents.replace(/NAME/g, data.name);
         },

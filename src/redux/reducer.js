@@ -3,7 +3,7 @@ import { combineReducers } from "redux";
 
 //imports
 
-import listener from "../src/modules/listener/ListenerState";
+import listener from "../modules/listener/ListenerState";
 import auth from "../modules/auth/AuthState";
 
 export default combineReducers({

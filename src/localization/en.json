@@ -7,7 +7,7 @@
     },
     "listenerLoginPage": {
         "loginString": "Username, Email or Phone Number",
-        "password": "Password",
+        "password": "One-Time Password",
         "passwordToolTip": "The One-TIme Passsword which has been texted to you.",
         "loginBlurb": "Use this form to login as a listener."
     }

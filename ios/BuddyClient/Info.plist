@@ -95,6 +95,30 @@
 		<string>rubicon-icon-font.ttf</string>
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
+		<string>BioRhyme-Bold.ttf</string>
+		<string>BioRhyme-ExtraBold.ttf</string>
+		<string>BioRhyme-ExtraLight.ttf</string>
+		<string>BioRhyme-Light.ttf</string>
+		<string>BioRhyme-Regular.ttf</string>
+		<string>Cormorant-Bold.ttf</string>
+		<string>Cormorant-BoldItalic.ttf</string>
+		<string>Cormorant-Italic.ttf</string>
+		<string>Cormorant-Light.ttf</string>
+		<string>Cormorant-LightItalic.ttf</string>
+		<string>Cormorant-Medium.ttf</string>
+		<string>Cormorant-MediumItalic.ttf</string>
+		<string>Cormorant-Regular.ttf</string>
+		<string>Cormorant-SemiBold.ttf</string>
+		<string>Cormorant-SemiBoldItalic.ttf</string>
+		<string>Eczar-Bold.ttf</string>
+		<string>Eczar-ExtraBold.ttf</string>
+		<string>Eczar-Medium.ttf</string>
+		<string>Eczar-Regular.ttf</string>
+		<string>Eczar-SemiBold.ttf</string>
+		<string>PT_Sans-Web-Bold.ttf</string>
+		<string>PT_Sans-Web-BoldItalic.ttf</string>
+		<string>PT_Sans-Web-Italic.ttf</string>
+		<string>PT_Sans-Web-Regular.ttf</string>
 	</array>
 </dict>
 </plist>
