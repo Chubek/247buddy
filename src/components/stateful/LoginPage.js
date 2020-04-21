@@ -18,7 +18,7 @@ export default class LoginPageComponent extends Component {
     return helpers.getOtpFromSms();
   }
 
-  authListener = async () => {
+  loginAndRedirect = async () => {
     const navigation = useNavigation();
 
     const authInfo = {
@@ -26,12 +26,17 @@ export default class LoginPageComponent extends Component {
       userName: this.state.loginString,
       number: this.state.loginString,
       password: this.state.password,
+      err: null,
     };
 
     const authRes = await authListener(authInfo);
 
     if (authRes.auth) {
       navigation.navigate("ListenerProfileScreen");
+    } else {
+      this.setState({
+        err: "Login unsuccessful." + res,
+      });
     }
   };
 
@@ -43,53 +48,57 @@ export default class LoginPageComponent extends Component {
   }
 
   render() {
+    const image = require("../../../assets/img/Flat-Mountains.svg");
     return (
-      <View>
-        <Text style={styles.headerText}>{en.listenerLoginPage.loginBlurb}</Text>
-        <Container style={styles.stringContainer}>
-          <Text style={styles.stringText}>
-            {en.listenerLoginPage.loginString}
+      <View style={styles.mainContainer}>
+        <ImageBackground source={image} style={styles.bgImage}>
+          <Text style={styles.headerText}>
+            {en.listenerLoginPage.loginBlurb}
           </Text>
-          <TextInput
-            style={styles.stringInput}
-            textContentType={"none"}
-            onChangeText={(v) => this.setState({ loginString: v })}
-          />
-        </Container>
+          <Container style={styles.stringContainer}>
+            <Text style={styles.stringText}>
+              {en.listenerLoginPage.loginString}
+            </Text>
+            <TextInput
+              style={styles.stringInput}
+              textContentType={"none"}
+              onChangeText={(v) => this.setState({ loginString: v })}
+            />
+          </Container>
 
-        <Container style={styles.passwordContainer}>
-          <Text style={styles.passwordText}>
-            {en.listenerLoginPage.password}
-          </Text>
-          <TextInput
-            style={styles.passwordInput}
-            textContentType={password}
-            value={this.state.smsOtp}
-            onChangeText={(v) => this.setState({ password: v })}
-          />
-        </Container>
+          <Container style={styles.passwordContainer}>
+            <Text style={styles.passwordText}>
+              {en.listenerLoginPage.password}
+            </Text>
+            <TextInput
+              style={styles.passwordInput}
+              textContentType={password}
+              value={this.state.smsOtp}
+              onChangeText={(v) => this.setState({ password: v })}
+            />
+          </Container>
 
-        <Button
-          style={styles.submitButton}
-          iconLeft
-          primary
-          full
-          onPress={() => {
-            this.setState({});
-          }}
-        >
-          <Text> Text </Text>
-        </Button>
+          <Button
+            style={styles.submitButton}
+            iconLeft
+            primary
+            full
+            onPress={this.loginAndRedirect()}
+          >
+            <Text stye={styles.error}> {this.state.er} </Text>
+          </Button>
+        </ImageBackground>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  text: {
+  mainContainer: {
+    flex: 1,
     alignItems: "center",
-    justifyContent: "spaced-around",
-    paddingHorizontal: 30,
+    justifyContent: "space-around",
+    back,
   },
 });
 
