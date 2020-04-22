@@ -3,20 +3,12 @@ import * as React from "react";
 import LoginPage from "../components/stateful/LoginPage";
 import { useNavigation } from "@react-navigation/native";
 import { connect } from "react-redux";
-import { authListener } from "../modules/listener/ListenerState";
+import ListenerView from "../modules/listener/ListenerView";
 
 function LoginScreen() {
   const navigation = useNavigation();
 
-  return <LoginPage navigation={navigation} />;
+  return <ListenerView navigation={navigation} switcher="login" />;
 }
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onAuthListener: (authInfo) => {
-      dispatch(authListener(authInfo));
-    },
-  };
-};
 
 export default connect(null, mapDispatchToProps)(LoginScreen);

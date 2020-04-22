@@ -2,7 +2,7 @@ import { compose } from "recompose";
 import { connect } from "react-redux";
 
 import ListenerView from "./ListenerView";
-import { thunkFunc } from "./ListenerState";
+import { authListener } from "./ListenerState";
 
 export default compose(
   connect(
@@ -12,7 +12,7 @@ export default compose(
       stateThree: state.stateThree,
     }),
     (dispatch) => ({
-      thunkFunc: (arg) => dispatch(thunkFunc(arg)),
+      onAuthListener: (authInfo) => dispatch(authListener(authInfo)),
     })
   )
 )(ListenerView);
