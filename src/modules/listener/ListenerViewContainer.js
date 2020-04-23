@@ -2,7 +2,7 @@ import { compose } from "recompose";
 import { connect } from "react-redux";
 
 import ListenerView from "./ListenerView";
-import { authListener } from "./ListenerState";
+import { authListener, registerListener } from "./ListenerState";
 
 export default compose(
   connect(
@@ -13,6 +13,8 @@ export default compose(
     }),
     (dispatch) => ({
       onAuthListener: (authInfo) => dispatch(authListener(authInfo)),
+      onRegisterListener: (listenerInfo) =>
+        dispatch(registerListener(listenerInfo)),
     })
   )
 )(ListenerView);

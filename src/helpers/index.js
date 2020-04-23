@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import globalStr from "../../global";
 import { showMessage, hideMessage } from "react-native-flash-message";
+import { Platform } from "react-native";
 import SmsListener from "react-native-android-sms-listener";
+import RNSimData from "react-native-sim-data";
 
 export const showErrorMessage = async (errorMessage) => {
   showMessage({
@@ -80,4 +82,21 @@ export const getOtpFromSms = () => {
 
 export const getFooter = () => {
   return `${new Date().toISOString().substr(0, 4)} - All Rights Reserved`;
-}
+};
+
+export const getNumberAndCountryCode = () => {
+  return new Promise((resolve, reject) => {
+    const phoneNumber = RNSimData.getTelephoneNumber();
+    const countryCode = RNSimData.getCountryCode();
+
+    if (Platform.OS == "android") {
+      if (phoneNumber || countryCode) {
+        resolve({ phoneNumber, countryCode });
+      } else {
+        reject("");
+      }
+    } else {
+      showErrorMessage("Your OS doesn't support this functionality.");
+    }
+  });
+};

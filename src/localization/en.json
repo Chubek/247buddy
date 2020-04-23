@@ -10,5 +10,12 @@
         "password": "One-Time Password",
         "passwordToolTip": "The One-TIme Passsword which has been texted to you.",
         "loginBlurb": "Use this form to login as a listener."
+    },
+    "registerPage": {
+        "userName": "Your Username",
+        "email": "Your Email",
+        "phoneNumber": "Your Phone Number",
+        "register": "Register",
+        "numberErr": "Your number is not Indian."
     }
 }

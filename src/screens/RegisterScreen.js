@@ -6,5 +6,6 @@ import ListenerView from "../modules/listener/ListenerView";
 export default function LoginScreen() {
   const navigation = useNavigation();
 
-  return <ListenerView navigation={navigation} switcher="login" />;
+  return <ListenerView navigation={navigation} switcher="register" />;
 }
+

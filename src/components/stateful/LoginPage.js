@@ -4,7 +4,6 @@ import { StyleSheet, ImageBackground } from "react-native";
 import {
   Container,
   Content,
-  Footer,
   Button,
   Icon,
   Text,
@@ -125,11 +124,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 10,
-  },
-  footer: {
-    height: "8%",
-    opacity: 30,
-    backgroundColor: "#ff7",
   },
   bgImage: { flex: 1, width: "100%", height: "100%" },
 });
