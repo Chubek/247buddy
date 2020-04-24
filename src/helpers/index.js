@@ -3,7 +3,7 @@ import globalStr from "../../global";
 import { showMessage, hideMessage } from "react-native-flash-message";
 import { Platform } from "react-native";
 import SmsListener from "react-native-android-sms-listener";
-import RNSimData from "react-native-sim-data";
+import { getPhoneNumber } from "react-native-device-info";
 
 export const showErrorMessage = async (errorMessage) => {
   showMessage({
@@ -84,16 +84,15 @@ export const getFooter = () => {
   return `${new Date().toISOString().substr(0, 4)} - All Rights Reserved`;
 };
 
-export const getNumberAndCountryCode = () => {
+export const getNumber = async () => {
   return new Promise((resolve, reject) => {
-    const phoneNumber = RNSimData.getTelephoneNumber();
-    const countryCode = RNSimData.getCountryCode();
+    const phoneNumber = await getPhoneNumber();
 
     if (Platform.OS == "android") {
-      if (phoneNumber || countryCode) {
-        resolve({ phoneNumber, countryCode });
+      if (phoneNumber) {
+        resolve(phoneNumber);
       } else {
-        reject("");
+        reject("Phone number wasn't found on this device.");
       }
     } else {
       showErrorMessage("Your OS doesn't support this functionality.");

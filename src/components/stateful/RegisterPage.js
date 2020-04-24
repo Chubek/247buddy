@@ -1,29 +1,18 @@
 /* Authored by Chubak Bidpaa: chubakbidpaa@gmail.com - 2020 - Corona Times */
 import React, { Component } from "react";
+import { StyleSheet, ImageBackground } from "react-native";
+import { Col, Row, Grid } from "react-native-easy-grid";
 import {
-  StyleSheet,
-  View,
-  TouchableHighlight,
-  ImageBackground,
-} from "react-native";
-import {
-  Container,
-  Content,
-  Button,
+  Tooltip,
   Icon,
-  Text,
   Input,
-  Label,
-  Form,
-  Item,
-  StyleProvider,
-  Right,
-  Left,
-} from "native-base";
+  Image,
+  Text,
+  Button,
+} from "react-native-elements";
 import * as helpers from "../../helpers/";
 import * as en from "../../localization/en.json";
-import getTheme from "~/native-base-theme/components/";
-import commonColor from "~/native-base-theme/variables/commonColor";
+const backgroundImage = require("../../../assets/img/gradient-1.png");
 
 export default class LoginPageComponent extends Component {
   state = {
@@ -32,23 +21,17 @@ export default class LoginPageComponent extends Component {
     number: "",
     categories: [],
     numberErr: "",
-    countryCode: "",
     receivedNumber: "",
     valid: false,
   };
 
-  getNumberAndCountryCode = async () => {
-    const numberRes = await helpers.getNumberAndCountryCode();
+  getNumber = async () => {
+    const numberRes = await helpers.getNumber();
 
     if (numberRes) {
       this.setState({
-        receivedNumber: numberRes.phoneNumber,
-        countryCode: numberRes.countryCode,
+        receivedNumber: numberRes,
       });
-
-      if (!/91/.test(numberRes.countryCode)) {
-        this.setState({ numberErr: en.registerPage.numberErr, valid: false });
-      }
     }
   };
 
@@ -79,81 +62,79 @@ export default class LoginPageComponent extends Component {
   };
 
   render() {
-    const backgroundImage = require("../../../assets/img/register-bg.png");
     return (
-      <StyleProvider style={getTheme(commonColor)}>
-        <Container style={styles.mainContainer}>
-          <ImageBackground source={backgroundImage} style={styles.bgImage}>
-            <Content>
-              <Form style={styles.form}>
-                <Content>
-                  <Item style={styles.itemContainer} stackedLabel>
-                    <Icon
-                      style={styles.icon}
-                      active
-                      name="snowflake-o"
-                      type="FontAwesome"
-                    />
-                    <Label style={styles.label}>
-                      {en.registerPage.userName}
-                    </Label>
-                    <Input onChange={(v) => this.setState({ userName: v })} />
-                  </Item>
-                </Content>
-                <Content>
-                  <Item style={styles.itemContainer} stackedLabel>
-                    <Icon
-                      style={styles.icon}
-                      active
-                      name="envelope"
-                      type="FontAwesome"
-                    />
-                    <Label style={styles.label}>{en.registerPage.email}</Label>
-                    <Input onChange={(v) => this.setState({ email: v })} />
-                  </Item>
-                </Content>
-                <Content
-                  style={styles.itemContainer}
-                  style={styles.phoneNumberInput}
-                >
-                  <Item stackedLabel>
-                    <Icon
-                      style={styles.icon}
-                      active
-                      name="device-mobile"
-                      type="Octicons"
-                    />
-                    <Label style={styles.label}>
-                      {en.registerPage.phoneNumber}
-                    </Label>
-                  </Item>
-
-                  <TouchableHighlight
-                    style={styles.phoneNumberHighlight}
-                    onPress={() => {
-                      this.getNumberAndCountryCode();
-                    }}
-                    underlayColor="transparent"
-                  >
-                    <Icon type="FontAwesome" name="bullseye" />
-                  </TouchableHighlight>
-                </Content>
-
-                <Button
-                  style={styles.submitButton}
-                  onPress={() => this.onRegisterUser()}
-                  rounded
-                  iconLeft
-                  warning
-                >
-                  <Icon type="FontAwesome" name="user-plus" />
-                  <Text>{en.registerPage.register}</Text>
-                </Button>
-              </Form>
-            </Content>
-          </ImageBackground>
-        </Container>
-      </StyleProvider>
+      <ImageBackground source={backgroundImage} style={styles.bgImage}>
+        <Grid>
+          <Row size={30} style={styles.inputField}>
+            <Col size={90}>
+              <Input
+                leftIcon={{ type: "font-awesome", name: "user" }}
+                label={en.registerPage.userName}
+                onChange={(v) => this.setState({ userName: v })}
+              />
+            </Col>
+            <Col size={10}>
+              <Tooltip
+                popover={<Text>{en.listenerLoginPage.userNameInfo}</Text>}
+              >
+                <Icon name="question-circle" type="font-awesome" color="#f80" />
+              </Tooltip>
+            </Col>
+          </Row>
+          <Row size={30} style={styles.inputField}>
+            <Col size={90}>
+              <Input
+                leftIcon={{ type: "font-awesome", name: "envelope" }}
+                label={en.registerPage.email}
+                onChange={(v) => this.setState({ email: v })}
+              />
+            </Col>
+            <Col size={10}>
+              <Tooltip popover={<Text>{en.listenerLoginPage.emailInfo}</Text>}>
+                <Icon name="question-circle" type="font-awesome" color="#f80" />
+              </Tooltip>
+            </Col>
+          </Row>
+          <Row size={30} style={styles.inputField}>
+            <Col size={80}>
+              <Input
+                leftIcon={{ type: "font-awesome", name: "mobile" }}
+                label={en.registerPage.phoneNumber}
+                onChange={(v) => {
+                  this.onValidatePhoneNumber(v);
+                  this.setState({ phoneNumber: v });
+                }}
+              />
+            </Col>
+            <Col size={10}>
+              <Icon
+                type="font-awesome"
+                name="bullseye"
+                onPress={this.getNumber()}
+                color="#f92"
+              />
+            </Col>
+            <Col size={10}>
+              <Tooltip popover={<Text>{en.listenerLoginPage.numberInfo}</Text>}>
+                <Icon name="question-circle" type="font-awesome" color="#f80" />
+              </Tooltip>
+            </Col>
+          </Row>
+          <Row size={70}>
+            <Col size={90}>
+              <Button
+                icon={{
+                  type: "font-awesome",
+                  name: "user-plus",
+                  color: "white",
+                }}
+                title={en.registerPage.register}
+                onPress={() => this.onRegisterUser()}
+              />
+            </Col>
+          </Row>
+        </Grid>
+      </ImageBackground>
     );
   }
 }
@@ -201,7 +182,6 @@ const styles = StyleSheet.create({
   phoneNumberInput: {
     flex: 1,
     flexDirection: "row",
-    
   },
   phoneNumberHighlight: {
     flex: -1,
