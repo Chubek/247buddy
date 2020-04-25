@@ -1,0 +1,6 @@
+{
+    "files.exclude": {
+        "BuddyClient": false
+    },
+    "workspace.isHidden": false
+}
