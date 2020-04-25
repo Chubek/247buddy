@@ -1,0 +1,3 @@
+[submodule "frontend-mod"]
+	path = Frontend
+	url = https://github.com/Chubek/247buddy-frontend.git
